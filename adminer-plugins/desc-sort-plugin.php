@@ -5,9 +5,9 @@
  * Automatically sorts table data in DESC order on primary key column by default
  * 
  * @author italic
- * @version 4.1.0
+ * @version 5.0.0
  * @link https://github.com/germain-italic/adminer-docker-custom
- * @compatible Adminer 4.x
+ * @compatible Adminer 4.x+
  */
 
 class AdminerDescSort {
@@ -16,74 +16,73 @@ class AdminerDescSort {
      * Plugin name for display
      */
     function name() {
-        return "Default DESC Sort v4.1.0";
+        return "Default DESC Sort v5.0.0";
     }
     
     /**
-     * Modify the table select query to add default DESC sort
+     * Add JavaScript to automatically redirect to DESC sort on first load
      */
-    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        // Si aucun tri n'est spécifié, ajouter un tri DESC sur 'id'
-        if (!$order) {
-            // Essayer de détecter la clé primaire
-            global $connection;
-            $table_status = table_status();
-            if ($table_status) {
-                $table = array_keys($table_status)[0];
-                $fields = fields($table);
+    function head() {
+        ?>
+        <script>
+        (function() {
+            // Vérifier si on est sur une page de sélection de table
+            if (window.location.href.indexOf('select=') > -1 && 
+                window.location.href.indexOf('order') === -1) {
                 
-                // Chercher une colonne 'id' ou la première clé primaire
-                $primary_key = null;
-                foreach ($fields as $name => $field) {
-                    if ($name === 'id') {
-                        $primary_key = 'id';
-                        break;
+                // Attendre que la page soit chargée
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Chercher le lien de tri sur la colonne 'id' ou première colonne
+                    var headers = document.querySelectorAll('table thead th a');
+                    var idLink = null;
+                    
+                    // Chercher spécifiquement la colonne 'id'
+                    for (var i = 0; i < headers.length; i++) {
+                        var header = headers[i];
+                        if (header.textContent.toLowerCase() === 'id' || 
+                            header.textContent.toLowerCase().indexOf('id') > -1) {
+                            idLink = header;
+                            break;
+                        }
                     }
-                    if ($field['primary']) {
-                        $primary_key = $name;
-                        break;
+                    
+                    // Si pas trouvé, prendre la première colonne
+                    if (!idLink && headers.length > 0) {
+                        idLink = headers[0];
                     }
-                }
-                
-                if ($primary_key) {
-                    $order = array($primary_key => 'DESC');
-                }
+                    
+                    if (idLink) {
+                        // Modifier l'URL pour ajouter DESC
+                        var href = idLink.href;
+                        if (href.indexOf('order') === -1) {
+                            var separator = href.indexOf('?') > -1 ? '&' : '?';
+                            var columnName = idLink.textContent.toLowerCase();
+                            
+                            // Extraire le nom de la colonne depuis l'URL ou le texte
+                            var match = href.match(/select=([^&]+)/);
+                            if (match) {
+                                // Rediriger automatiquement avec le tri DESC
+                                var newUrl = href + separator + 'order%5B0%5D=' + encodeURIComponent(columnName) + '&desc%5B0%5D=1';
+                                console.log('AdminerDescSort: Redirecting to', newUrl);
+                                window.location.href = newUrl;
+                            }
+                        }
+                    }
+                });
             }
-        }
-        
-        return "";
+        })();
+        </script>
+        <?php
     }
     
     /**
-     * Modifier l'URL de tri par défaut
+     * Modifier les liens de tri pour commencer par DESC
      */
     function selectLink($val, $field) {
-        if (!$_GET["order"]) {
-            // Si aucun tri n'est défini, on veut que le premier clic soit DESC
-            return null;
+        // Si aucun tri n'est défini, le premier clic doit être DESC
+        if (!isset($_GET["order"])) {
+            return null; // Laisser Adminer gérer mais on va intercepter avec JS
         }
-        return false;
-    }
-    
-    /**
-     * Intercepter et modifier les requêtes SELECT
-     */
-    function selectQuery($query, $start, $failed = false) {
-        // Vérifier si c'est une requête de sélection de table sans ORDER BY
-        if (preg_match('/^SELECT .+ FROM `([^`]+)`(?:\s+WHERE .+)?$/i', $query, $matches) && 
-            !preg_match('/ORDER BY/i', $query) && 
-            !$_GET["order"]) {
-            
-            $table = $matches[1];
-            
-            // Ajouter ORDER BY id DESC par défaut
-            $modified_query = rtrim($query, '; ') . " ORDER BY `id` DESC";
-            
-            error_log("AdminerDescSort: Modified query from '$query' to '$modified_query'");
-            
-            return $modified_query;
-        }
-        
-        return $query;
+        return false; // Comportement normal
     }
 }
