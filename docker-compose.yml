@@ -4,11 +4,6 @@ networks:
   adminer-network:
     external: true
 
-networks:
-  default:
-    external: true
-    name: bridge
-
 services:
   adminer:
     build: .
