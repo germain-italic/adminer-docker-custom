@@ -16,7 +16,7 @@ COPY plugin-desc-sort.php /var/www/html/adminer-plugins/
 USER root
 
 # Crée le fichier de configuration des plugins
-RUN echo '<?php return array(new AdminerDescSort);' > /var/www/html/adminer-plugins.php
+RUN echo '<?php function adminer_object() { include_once "adminer-plugins/plugin-desc-sort.php"; return new AdminerDescSort(); } include "adminer.php";' > /var/www/html/index.php
 
 # Remet les bonnes permissions
 RUN chown -R www-data:www-data /var/www/html/adminer-plugins*

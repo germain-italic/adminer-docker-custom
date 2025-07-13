@@ -4,102 +4,32 @@
  * Adminer Plugin: Default DESC Sort
  * 
  * Automatically sorts table data in DESC order on primary key column by default
- * Compatible with Adminer plugin architecture
+ * Uses JavaScript approach for maximum compatibility
  * 
  * @author italic
- * @version 3.0.0
+ * @version 3.1.0
  * @link https://github.com/germain-italic/adminer-docker-custom
  */
 
-class AdminerDescSort {
+class AdminerDescSort extends AdminerPlugin {
     
     /**
-     * Plugin name for display
+     * Plugin name for display in loaded plugins
      */
     function name() {
-        return "AdminerDescSort";
+        return "Default DESC Sort";
     }
     
     /**
      * Plugin version
      */
     function version() {
-        return "3.0.0";
+        return "3.1.0";
     }
     
     /**
-     * Plugin description for loaded plugins section
-     */
-    function description() {
-        return "Automatically sorts table data in DESC order on primary key column by default";
-    }
-    
-    /**
-     * Get the primary key column name for a table
-     */
-    function getPrimaryKeyColumn($table) {
-        global $connection;
-        
-        if (!$connection || !$table) {
-            return null;
-        }
-        
-        try {
-            // Get table indexes to find primary key
-            $indexes = indexes($table);
-            
-            if ($indexes) {
-                foreach ($indexes as $index) {
-                    if ($index["type"] == "PRIMARY") {
-                        // Return the first column of the primary key
-                        $columns = array_keys($index["columns"]);
-                        if (!empty($columns)) {
-                            return $columns[0];
-                        }
-                    }
-                }
-            }
-            
-            // Fallback: check for common primary key names
-            $fields = fields($table);
-            if ($fields) {
-                $commonPkNames = array('id', 'ID', $table . '_id', $table . 'Id');
-                
-                foreach ($commonPkNames as $pkName) {
-                    if (isset($fields[$pkName])) {
-                        return $pkName;
-                    }
-                }
-            }
-        } catch (Exception $e) {
-            // Silent fail, return null
-        }
-        
-        return null;
-    }
-    
-    /**
-     * Modify the select query to add default DESC ordering
-     * This is the main method that handles the default sorting
-     */
-    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        // Only modify if no order is specified and we're selecting from a table
-        if (empty($order) && isset($_GET["select"])) {
-            $table = $_GET["select"];
-            $primaryKey = $this->getPrimaryKeyColumn($table);
-            
-            if ($primaryKey) {
-                // Add DESC order on primary key
-                $order = array($primaryKey => true); // true = DESC in Adminer
-            }
-        }
-        
-        // Always return all parameters (required by Adminer)
-        return array($select, $where, $group, $order, $limit, $page);
-    }
-    
-    /**
-     * Add JavaScript fallback for cases where selectQueryBuild doesn't work
+     * Add JavaScript to automatically sort by primary key DESC
+     * This approach is the most compatible and doesn't interfere with Adminer's internals
      */
     function head() {
         // Only add JavaScript on select pages without existing order
@@ -116,21 +46,40 @@ document.addEventListener("DOMContentLoaded", function() {
         var table = document.querySelector("table");
         if (table) {
             var headers = table.querySelectorAll("thead th a");
-            var primaryKeyFound = false;
             
-            // Look for common primary key patterns
+            // Look for primary key patterns
             for (var i = 0; i < headers.length; i++) {
-                var headerText = headers[i].textContent.toLowerCase();
-                if (headerText === "id" || headerText.endsWith("_id")) {
+                var headerText = headers[i].textContent.toLowerCase().trim();
+                
+                // Check for common primary key names
+                if (headerText === "id" || 
+                    headerText.endsWith("_id") || 
+                    headerText === "pk" ||
+                    headerText.indexOf("primary") !== -1) {
+                    
                     // Add order parameters and redirect
                     url.searchParams.set("order[0]", headers[i].textContent);
+                    url.searchParams.set("desc[0]", "1");
+                    
+                    // Only redirect if URL actually changed
+                    if (window.location.href !== url.toString()) {
+                        window.location.href = url.toString();
+                        return;
+                    }
+                    break;
+                }
+            }
+            
+            // Fallback: if no obvious primary key found, try the first column
+            if (headers.length > 0) {
+                var firstHeader = headers[0].textContent.trim();
+                if (firstHeader) {
+                    url.searchParams.set("order[0]", firstHeader);
                     url.searchParams.set("desc[0]", "1");
                     
                     if (window.location.href !== url.toString()) {
                         window.location.href = url.toString();
                     }
-                    primaryKeyFound = true;
-                    break;
                 }
             }
         }
