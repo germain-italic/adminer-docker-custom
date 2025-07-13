@@ -6,12 +6,13 @@ LABEL description="Adminer with automatic DESC sorting on primary keys"
 LABEL version="1.0.0"
 LABEL repository="https://github.com/germain-italic/adminer-docker-custom"
 
-# Copie le plugin universel et le fichier principal
+# Copie le plugin universel
 COPY plugin-desc-sort.php /var/www/html/plugin-desc-sort.php
-COPY custom-adminer.php /var/www/html/index.php
 
-# Expose le port 8080 (port standard d'Adminer)
-)
+# Crée un index.php qui inclut le plugin
+RUN echo '<?php include "plugin-desc-sort.php"; include "adminer.php";' > /var/www/html/index.php
+
+# Expose le port 8080
 EXPOSE 8080
 
 # Variables d'environnement par défaut
