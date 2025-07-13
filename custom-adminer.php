@@ -1,6 +1,6 @@
 <?php
 // Plugin Adminer pour tri DESC par défaut
-class AdminerCustom extends Adminer {
+class AdminerCustomSort extends AdminerPlugin {
     function selectOrderProcess($fields, $indexes) {
         $order = parent::selectOrderProcess($fields, $indexes);
         
@@ -15,10 +15,5 @@ class AdminerCustom extends Adminer {
         
         return $order;
     }
-}
-
-// Fonction pour retourner l'instance personnalisée
-function adminer_object() {
-    return new AdminerCustom;
 }
 ?>
