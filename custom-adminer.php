@@ -7,7 +7,7 @@ namespace docker {
                 foreach ($indexes as $index) {
                     if ($index["type"] == "PRIMARY") {
                         $primary_column = $index["columns"][0];
-                        return "<a href='" . h(remove_from_uri("order")) . "&amp;order%5B0%5D=" . urlencode($primary_column) . "&amp;desc%5B0%5D=1'>" . h($primary_column) . " ↓</a>";
+                        return "<a href='" . \h(\remove_from_uri("order")) . "&amp;order%5B0%5D=" . urlencode($primary_column) . "&amp;desc%5B0%5D=1'>" . \h($primary_column) . " ↓</a>";
                     }
                 }
             }
@@ -20,7 +20,7 @@ namespace docker {
                 // Trouve la table dans la requête
                 if (preg_match('/FROM\s+`?(\w+)`?/i', $query, $matches)) {
                     $table = $matches[1];
-                    $indexes = indexes($table);
+                    $indexes = \indexes($table);
                     foreach ($indexes as $index) {
                         if ($index["type"] == "PRIMARY") {
                             $primary_column = $index["columns"][0];
