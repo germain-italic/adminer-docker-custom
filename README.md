@@ -23,12 +23,10 @@ wget https://github.com/vrana/adminer/releases/download/v5.3.0/adminer-5.3.0.php
 mv adminer-5.3.0.php index.php
 
 # 2. Download the plugin
-wget https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
+mkdir adminer-plugins
+wget -O adminer-plugins/desc-sort-plugin.php https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
 
-# 3. Rename the plugin
-mv desc-sort-plugin.php plugin-desc-sort.php
-
-# 4. Create plugin configuration file
+# 3. Create plugin configuration file
 echo '<?php include_once "plugin-desc-sort.php"; return array(new AdminerDescSort);' > adminer-plugins.php
 ```
 

@@ -10,13 +10,13 @@ LABEL repository="https://github.com/germain-italic/adminer-docker-custom"
 RUN mkdir -p /var/www/html/adminer-plugins
 
 # Copie le plugin dans le répertoire standard
-COPY plugin-desc-sort.php /var/www/html/adminer-plugins/
+COPY adminer-plugins/desc-sort-plugin.php /var/www/html/adminer-plugins/
 
 # Utilise USER root temporairement pour les permissions
 USER root
 
 # Crée le fichier de configuration des plugins
-RUN echo '<?php include_once "adminer-plugins/plugin-desc-sort.php";' > /var/www/html/index.php
+RUN echo '<?php include_once "adminer-plugins/desc-sort-plugin.php"; return array(new AdminerDescSort);' > /var/www/html/adminer-plugins.php
 
 # Remet les bonnes permissions
 RUN chown -R www-data:www-data /var/www/html/adminer-plugins*
