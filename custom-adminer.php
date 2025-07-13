@@ -1,10 +1,8 @@
 <?php
-
-// Inclut d'abord Adminer pour charger les classes
-include "./adminer.php";
-
-// Maintenant on peut utiliser les classes Adminer
 namespace Adminer;
+
+// Inclut Adminer pour charger les classes
+include "./adminer.php";
 
 class AdminerCustomSort extends Plugin {
     function selectQuery($query, $start, $failed = false) {
