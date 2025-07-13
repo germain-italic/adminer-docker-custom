@@ -42,7 +42,7 @@ chmod +x setup.sh
 
 ## ✨ Features
 
-- ✅ Automatic **DESC** sorting on `id` column by default
+- ✅ Automatic **DESC** sorting on **primary key** column by default
 - ✅ Compatible with standard Adminer plugin architecture
 - ✅ Based on Adminer 5.x (always latest stable version)
 - ✅ No Adminer modifications required
@@ -52,7 +52,8 @@ chmod +x setup.sh
 The plugin uses Adminer's standard architecture:
 - Placed in `adminer-plugins/`
 - Loaded via `adminer-plugins.php`
-- Automatically modifies SELECT queries to add `ORDER BY id DESC`
+- Automatically detects primary key and adds `ORDER BY primary_key DESC`
+- Works with any primary key name (id, user_id, estimate_file_id, etc.)
 
 ## 🌐 Access
 
