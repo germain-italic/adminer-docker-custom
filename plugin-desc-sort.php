@@ -3,48 +3,77 @@
 /**
  * Adminer Plugin: Default DESC Sort
  * 
- * Plugin universel pour forcer le tri DESC par défaut sur la colonne 'id'
- * Compatible avec Docker et installations vanilla
+ * Plugin pour forcer le tri DESC par défaut sur la colonne 'id'
+ * Compatible avec l'architecture standard des plugins Adminer
  * 
  * @author italic
- * @version 1.0.0
+ * @version 2.0.0
  * @link https://github.com/germain-italic/adminer-docker-custom
  */
 
-// Force DESC par défaut si aucun ordre spécifié
-if (!isset($_GET["order"]) && isset($_GET["select"])) {
-    // Redirige avec ordre DESC sur la première colonne
-    if (!headers_sent()) {
-        $current_url = $_SERVER['REQUEST_URI'];
-        if (strpos($current_url, 'order') === false) {
-            // Ajoute order[0]=id&desc[0]=1 à l'URL
-            $separator = strpos($current_url, '?') !== false ? '&' : '?';
-            $new_url = $current_url . $separator . 'order%5B0%5D=id&desc%5B0%5D=1';
-            header("Location: $new_url");
-            exit;
-        }
-    }
-}
-
-/**
- * Plugin class pour Adminer (optionnel)
- */
 class AdminerDescSort {
     
+    /**
+     * Nom du plugin
+     */
     function name() {
         return "Default DESC Sort";
     }
     
+    /**
+     * Version du plugin
+     */
     function version() {
-        return "1.0.0";
+        return "2.0.0";
     }
     
+    /**
+     * Description du plugin
+     */
     function description() {
         return "Automatically sorts table data in DESC order on 'id' column by default";
     }
+    
+    /**
+     * Modifie l'ordre de tri par défaut pour les sélections
+     * Cette méthode est appelée avant l'affichage des données d'une table
+     */
+    function selectOrderPrint($order, $columns, $indexes) {
+        // Si aucun ordre n'est spécifié et qu'on a une colonne 'id'
+        if (empty($order) && isset($columns['id'])) {
+            // Force le tri DESC sur la colonne 'id'
+            $_GET['order'][0] = 'id';
+            $_GET['desc'][0] = '1';
+        }
+        
+        // Laisse Adminer gérer l'affichage normal
+        return false;
+    }
+    
+    /**
+     * Modifie la requête SELECT pour appliquer l'ordre par défaut
+     */
+    function selectQuery($query, $start) {
+        // Si aucun ORDER BY n'est présent dans la requête et qu'on a une table avec 'id'
+        if (stripos($query, 'ORDER BY') === false && 
+            preg_match('/FROM\s+`?(\w+)`?/i', $query, $matches)) {
+            
+            $table = $matches[1];
+            
+            // Vérifie si la table a une colonne 'id'
+            global $connection;
+            if ($connection) {
+                $fields = fields($table);
+                if (isset($fields['id'])) {
+                    // Ajoute ORDER BY id DESC à la requête
+                    $query = rtrim($query, '; ') . ' ORDER BY `id` DESC';
+                }
+            }
+        }
+        
+        return $query;
+    }
 }
 
-// Retourner une instance du plugin si utilisé avec le système de plugins d'Adminer
-if (class_exists('Adminer')) {
-    return new AdminerDescSort;
-}
+// Retourne une instance du plugin
+return new AdminerDescSort;
