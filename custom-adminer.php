@@ -1,10 +1,10 @@
 <?php
-namespace Adminer;
 
 // Inclut Adminer pour charger les classes
 include "./adminer.php";
 
-class AdminerCustomSort extends Plugin {
+// Utilise le namespace Adminer existant
+class AdminerCustomSort extends \Adminer\Plugin {
     function selectQuery($query, $start, $failed = false) {
         // Ajoute ORDER BY si pas présent
         if (!preg_match('/ORDER\s+BY/i', $query)) {
