@@ -5,7 +5,7 @@
  * Automatically sorts table data in DESC order on primary key column by default
  * 
  * @author italic
- * @version 6.0.0
+ * @version 7.0.0
  * @link https://github.com/germain-italic/adminer-docker-custom
  * @compatible Adminer 4.x+
  */
@@ -16,46 +16,56 @@ class AdminerDescSort {
      * Plugin name for display
      */
     function name() {
-        return "Default DESC Sort v6.0.0";
+        return "Default DESC Sort v7.0.0";
     }
     
     /**
      * Modify the SELECT query to add DESC sort on primary key if no ORDER BY is present
+     * This method is called before query execution
      */
-    function selectQuery($query, $start, $failed) {
-        // Vérifier si la requête est un SELECT et n'a pas déjà d'ORDER BY
-        if (preg_match('/^SELECT\s+/i', $query) && !preg_match('/ORDER\s+BY/i', $query)) {
+    function selectQuery($query, $start, $failed = false) {
+        // Debug: log the original query
+        error_log("AdminerDescSort: Original query: " . $query);
+        
+        // Only process SELECT queries that don't already have ORDER BY
+        if (preg_match('/^SELECT\s+/i', trim($query)) && !preg_match('/\bORDER\s+BY\b/i', $query)) {
             
-            // Extraire le nom de la table depuis la requête
-            if (preg_match('/FROM\s+`?([^`\s]+)`?/i', $query, $matches)) {
+            // Extract table name from FROM clause
+            if (preg_match('/\bFROM\s+`?([^`\s\(\)]+)`?/i', $query, $matches)) {
                 $table = $matches[1];
+                error_log("AdminerDescSort: Found table: " . $table);
                 
-                // Obtenir les champs de la table pour trouver la clé primaire
-                $fields = fields($table);
-                $primary_key = null;
-                
-                // Chercher la clé primaire
-                foreach ($fields as $field_name => $field) {
-                    if ($field['primary']) {
-                        $primary_key = $field_name;
-                        break;
+                // Get table fields to find primary key
+                try {
+                    $fields = fields($table);
+                    $primary_key = null;
+                    
+                    // Look for primary key
+                    foreach ($fields as $field_name => $field) {
+                        if (isset($field['primary']) && $field['primary']) {
+                            $primary_key = $field_name;
+                            break;
+                        }
                     }
-                }
-                
-                // Si pas de clé primaire trouvée, utiliser 'id' par défaut
-                if (!$primary_key) {
-                    // Vérifier si une colonne 'id' existe
-                    if (isset($fields['id'])) {
+                    
+                    // Fallback to 'id' if no primary key found
+                    if (!$primary_key && isset($fields['id'])) {
                         $primary_key = 'id';
-                    } else {
-                        // Prendre la première colonne
-                        $primary_key = array_keys($fields)[0] ?? null;
                     }
-                }
-                
-                // Ajouter ORDER BY DESC si une clé primaire a été trouvée
-                if ($primary_key) {
-                    $query = rtrim($query, '; ') . " ORDER BY `$primary_key` DESC";
+                    
+                    // Fallback to first column if still no key found
+                    if (!$primary_key && !empty($fields)) {
+                        $primary_key = array_keys($fields)[0];
+                    }
+                    
+                    if ($primary_key) {
+                        // Add ORDER BY clause
+                        $query = rtrim($query, '; ') . " ORDER BY `$primary_key` DESC";
+                        error_log("AdminerDescSort: Modified query: " . $query);
+                    }
+                    
+                } catch (Exception $e) {
+                    error_log("AdminerDescSort: Error getting fields for table $table: " . $e->getMessage());
                 }
             }
         }
@@ -64,30 +74,42 @@ class AdminerDescSort {
     }
     
     /**
-     * Ajouter du CSS pour indiquer le tri actif
+     * Alternative approach: modify the query building process
      */
-    function head($dark) {
-        ?>
-        <style>
-        /* Indiquer visuellement le tri DESC par défaut */
-        .adminer-desc-sort-active {
-            background-color: #e8f4fd !important;
-        }
-        </style>
-        <script>
-        // Marquer visuellement la colonne triée
-        document.addEventListener('DOMContentLoaded', function() {
-            var url = window.location.href;
-            if (url.indexOf('select=') > -1 && url.indexOf('order') === -1) {
-                // Première visite sur une table, marquer la première colonne
-                var firstHeader = document.querySelector('table thead th:first-child');
-                if (firstHeader) {
-                    firstHeader.classList.add('adminer-desc-sort-active');
+    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
+        // If no order is specified, add default DESC order on primary key
+        if (empty($order)) {
+            // Get current table from URL
+            $table = $_GET['select'] ?? '';
+            if ($table) {
+                try {
+                    $fields = fields($table);
+                    $primary_key = null;
+                    
+                    // Find primary key
+                    foreach ($fields as $field_name => $field) {
+                        if (isset($field['primary']) && $field['primary']) {
+                            $primary_key = $field_name;
+                            break;
+                        }
+                    }
+                    
+                    // Fallback to 'id'
+                    if (!$primary_key && isset($fields['id'])) {
+                        $primary_key = 'id';
+                    }
+                    
+                    if ($primary_key) {
+                        $order = array("`$primary_key` DESC");
+                        error_log("AdminerDescSort: Added default order: " . implode(', ', $order));
+                    }
+                } catch (Exception $e) {
+                    error_log("AdminerDescSort: Error in selectQueryBuild: " . $e->getMessage());
                 }
             }
-        });
-        </script>
-        <?php
-        return false; // Continuer avec le head normal
+        }
+        
+        // Call parent method to build the query
+        return parent::selectQueryBuild($select, $where, $group, $order, $limit, $page);
     }
 }
