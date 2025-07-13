@@ -1,4 +1,9 @@
 <?php
+
+// Inclut d'abord Adminer pour charger les classes
+include "./adminer.php";
+
+// Maintenant on peut utiliser les classes Adminer
 namespace Adminer;
 
 class AdminerCustomSort extends Plugin {
@@ -23,7 +28,5 @@ class AdminerCustomSort extends Plugin {
     }
 }
 
-// Configuration pour Adminer 5.3.0
+// Configuration des plugins
 $plugins = [new AdminerCustomSort()];
-
-include "./adminer.php";
