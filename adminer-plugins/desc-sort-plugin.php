@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Adminer Plugin: Default DESC Sort - Debug Version
+ * Adminer Plugin: Default DESC Sort
+ * Version compatible avec l'architecture officielle d'Adminer
  */
 
 class AdminerDescSort {
@@ -10,18 +11,32 @@ class AdminerDescSort {
         return "Default DESC Sort";
     }
     
-    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        // Debug: Log what we receive
-        error_log("AdminerDescSort DEBUG - Input order: " . print_r($order, true));
+    /**
+     * Méthode correcte pour modifier les requêtes SELECT dans Adminer
+     */
+    function selectQuery($query, $start) {
+        // Log pour debug
+        error_log("AdminerDescSort: Original query = " . $query);
         
-        // Si il y a déjà un ORDER BY, on ne fait rien
-        if (!empty($order)) {
-            error_log("AdminerDescSort DEBUG - Order already exists, skipping");
-            return array($select, $where, $group, $order, $limit, $page);
+        // Si la requête contient déjà ORDER BY, on ne fait rien
+        if (stripos($query, 'ORDER BY') !== false) {
+            error_log("AdminerDescSort: Query already has ORDER BY, skipping");
+            return $query;
         }
         
-        // Pour l'instant, on ne fait RIEN d'autre
-        error_log("AdminerDescSort DEBUG - No order, but not adding any for now");
-        return array($select, $where, $group, $order, $limit, $page);
+        // Extraire le nom de la table de la requête
+        if (preg_match('/FROM\s+`?(\w+)`?/i', $query, $matches)) {
+            $table = $matches[1];
+            error_log("AdminerDescSort: Found table = " . $table);
+            
+            // Ajouter ORDER BY id DESC à la fin de la requête
+            $modified_query = rtrim($query, '; ') . ' ORDER BY `id` DESC';
+            error_log("AdminerDescSort: Modified query = " . $modified_query);
+            
+            return $modified_query;
+        }
+        
+        error_log("AdminerDescSort: Could not extract table name, returning original query");
+        return $query;
     }
 }

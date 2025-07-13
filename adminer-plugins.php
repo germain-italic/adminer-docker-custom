@@ -1,3 +1,3 @@
 <?php
-// Plugin temporairement désactivé pour debug
-return array();
+include_once "adminer-plugins/desc-sort-plugin.php";
+return array(new AdminerDescSort);
