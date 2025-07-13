@@ -38,7 +38,7 @@ chmod +x setup.sh
 
 - ✅ Automatic **DESC** sorting on `id` column by default
 - ✅ Works with Docker and vanilla installations
-- ✅ Based on Adminer 5.3.0 (latest stable)
+- ✅ Based on Adminer 5.x (always latest stable)
 - ✅ Universal plugin - one file for all setups
 
 ## 🔧 How it Works

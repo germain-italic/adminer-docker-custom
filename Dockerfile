@@ -1,4 +1,4 @@
-FROM adminer:5.3.0
+FROM adminer:5
 
 # Métadonnées
 LABEL maintainer="italic"
@@ -9,8 +9,17 @@ LABEL repository="https://github.com/germain-italic/adminer-docker-custom"
 # Copie le plugin universel
 COPY plugin-desc-sort.php /var/www/html/plugin-desc-sort.php
 
+# Utilise USER root temporairement pour les permissions
+USER root
+
 # Crée un index.php qui inclut le plugin
 RUN echo '<?php include "plugin-desc-sort.php"; include "adminer.php";' > /var/www/html/index.php
+
+# Remet les bonnes permissions
+RUN chown www-data:www-data /var/www/html/index.php
+
+# Revient à l'utilisateur par défaut
+USER www-data
 
 # Expose le port 8080
 EXPOSE 8080
