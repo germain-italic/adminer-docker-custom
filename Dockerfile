@@ -4,9 +4,13 @@ FROM adminer:latest
 COPY custom-adminer.php /var/www/html/
 
 # Crée un nouveau point d'entrée qui charge le plugin
-RUN echo '<?php' > /var/www/html/index.php && \
-    echo 'function adminer_object() {' >> /var/www/html/index.php && \
-    echo '    include_once "custom-adminer.php";' >> /var/www/html/index.php && \
-    echo '    return new AdminerCustom;' >> /var/www/html/index.php && \
-    echo '}' >> /var/www/html/index.php && \
-    echo 'include "adminer.php";' >> /var/www/html/index.php
+# Utilise /tmp pour éviter les problèmes de permissions, puis copie
+RUN echo '<?php' > /tmp/index.php && \
+    echo 'function adminer_object() {' >> /tmp/index.php && \
+    echo '    include_once "custom-adminer.php";' >> /tmp/index.php && \
+    echo '    return new AdminerCustom;' >> /tmp/index.php && \
+    echo '}' >> /tmp/index.php && \
+    echo 'include "adminer.php";' >> /tmp/index.php && \
+    mv /var/www/html/index.php /var/www/html/adminer.php && \
+    mv /tmp/index.php /var/www/html/index.php && \
+    chown www-data:www-data /var/www/html/index.php
