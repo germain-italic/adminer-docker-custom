@@ -5,9 +5,9 @@
  * Automatically sorts table data in DESC order on primary key column by default
  * 
  * @author italic
- * @version 4.0.0
+ * @version 4.1.0
  * @link https://github.com/germain-italic/adminer-docker-custom
- * @compatible Adminer 5.3.0
+ * @compatible Adminer 4.x
  */
 
 class AdminerDescSort {
@@ -16,46 +16,74 @@ class AdminerDescSort {
      * Plugin name for display
      */
     function name() {
-        return "Default DESC Sort v4.0.0";
+        return "Default DESC Sort v4.1.0";
     }
     
     /**
-     * Intercept all SQL queries and modify SELECT queries to add DESC sort
+     * Modify the table select query to add default DESC sort
      */
-    function query($query, $start = 0) {
-        error_log("AdminerDescSort: Intercepting query: " . substr($query, 0, 100) . "...");
-        
-        // Only modify SELECT queries
-        if (preg_match('/^\s*SELECT\s+/i', $query)) {
-            // Check if ORDER BY already exists
-            if (!preg_match('/\bORDER\s+BY\b/i', $query)) {
-                // Try to detect table name from FROM clause
-                if (preg_match('/\bFROM\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s*/i', $query, $matches)) {
-                    $table = $matches[1];
-                    error_log("AdminerDescSort: Found table: $table");
-                    
-                    // Add ORDER BY id DESC (or table_id DESC)
-                    $primary_key = 'id';
-                    
-                    // Check if query contains LIMIT
-                    if (preg_match('/\bLIMIT\s+/i', $query)) {
-                        // Insert ORDER BY before LIMIT
-                        $modified_query = preg_replace('/(\s+LIMIT\s+)/i', " ORDER BY `$primary_key` DESC$1", $query);
-                    } else {
-                        // Add ORDER BY at the end
-                        $modified_query = rtrim($query, '; ') . " ORDER BY `$primary_key` DESC";
+    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
+        // Si aucun tri n'est spécifié, ajouter un tri DESC sur 'id'
+        if (!$order) {
+            // Essayer de détecter la clé primaire
+            global $connection;
+            $table_status = table_status();
+            if ($table_status) {
+                $table = array_keys($table_status)[0];
+                $fields = fields($table);
+                
+                // Chercher une colonne 'id' ou la première clé primaire
+                $primary_key = null;
+                foreach ($fields as $name => $field) {
+                    if ($name === 'id') {
+                        $primary_key = 'id';
+                        break;
                     }
-                    
-                    error_log("AdminerDescSort: Modified query: " . substr($modified_query, 0, 200) . "...");
-                    
-                    // Execute the modified query
-                    global $connection;
-                    return $connection->query($modified_query);
+                    if ($field['primary']) {
+                        $primary_key = $name;
+                        break;
+                    }
+                }
+                
+                if ($primary_key) {
+                    $order = array($primary_key => 'DESC');
                 }
             }
         }
         
-        // Return false to let Adminer handle the original query
+        return "";
+    }
+    
+    /**
+     * Modifier l'URL de tri par défaut
+     */
+    function selectLink($val, $field) {
+        if (!$_GET["order"]) {
+            // Si aucun tri n'est défini, on veut que le premier clic soit DESC
+            return null;
+        }
         return false;
+    }
+    
+    /**
+     * Intercepter et modifier les requêtes SELECT
+     */
+    function selectQuery($query, $start, $failed = false) {
+        // Vérifier si c'est une requête de sélection de table sans ORDER BY
+        if (preg_match('/^SELECT .+ FROM `([^`]+)`(?:\s+WHERE .+)?$/i', $query, $matches) && 
+            !preg_match('/ORDER BY/i', $query) && 
+            !$_GET["order"]) {
+            
+            $table = $matches[1];
+            
+            // Ajouter ORDER BY id DESC par défaut
+            $modified_query = rtrim($query, '; ') . " ORDER BY `id` DESC";
+            
+            error_log("AdminerDescSort: Modified query from '$query' to '$modified_query'");
+            
+            return $modified_query;
+        }
+        
+        return $query;
     }
 }
