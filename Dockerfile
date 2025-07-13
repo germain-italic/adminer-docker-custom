@@ -1,4 +1,4 @@
-FROM adminer:4.8.1
+FROM adminer:5.3.0
 
 # Métadonnées
 LABEL maintainer="italic"
