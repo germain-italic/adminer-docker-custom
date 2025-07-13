@@ -1,27 +1,23 @@
 <?php
 namespace docker {
     class AdminerCustomSort extends \Adminer\Plugin {
-        function selectQuery($query, $start, $failed = false) {
-            // Modifie la requête pour ajouter ORDER BY si pas présent
-            if (!preg_match('/ORDER\s+BY/i', $query)) {
-                // Essaie de détecter une colonne 'id' dans la requête
-                if (preg_match('/SELECT.*\bid\b/i', $query)) {
-                    $query = rtrim($query, ';') . " ORDER BY `id` DESC";
+        function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
+            // Si aucun ordre spécifié, ajoute un tri DESC sur la première colonne qui ressemble à un ID
+            if (!$order) {
+                // Essaie de trouver une colonne ID dans les colonnes sélectionnées
+                foreach ($select as $key => $val) {
+                    if (preg_match('/\bid\b/i', $key) || preg_match('/\w*id$/i', $key)) {
+                        $order = array($key => true); // true = DESC
+                        break;
+                    }
                 }
-                // Sinon, essaie de trouver la première colonne qui ressemble à une clé primaire
-                else if (preg_match('/SELECT\s+(.+?)\s+FROM/i', $query, $matches)) {
-                    $columns = $matches[1];
-                    // Cherche des patterns de clés primaires communes
-                    if (preg_match('/\b(\w*id\w*)\b/i', $columns, $id_match)) {
-                        $query = rtrim($query, ';') . " ORDER BY `" . $id_match[1] . "` DESC";
-                    }
-                    // Fallback : utilise la première colonne
-                    else if (preg_match('/`?(\w+)`?/', $columns, $first_col)) {
-                        $query = rtrim($query, ';') . " ORDER BY `" . $first_col[1] . "` DESC";
-                    }
+                // Si pas d'ID trouvé, utilise la première colonne
+                if (!$order && $select) {
+                    $first_column = array_keys($select)[0];
+                    $order = array($first_column => true); // true = DESC
                 }
             }
-            return parent::selectQuery($query, $start, $failed);
+            return parent::selectQueryBuild($select, $where, $group, $order, $limit, $page);
         }
     }
 
