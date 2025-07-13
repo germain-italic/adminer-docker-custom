@@ -1,80 +1,82 @@
 #!/bin/bash
 
-# Script de setup pour Adminer Custom avec tri DESC par défaut
+# Setup script for Adminer Custom with default DESC sort
 
-echo "🚀 Setup Adminer Custom - Tri DESC par défaut..."
+echo "🚀 Setting up Adminer Custom - Default DESC sort..."
 echo ""
 
-# Vérification Docker
+# Check Docker
 if ! command -v docker &> /dev/null; then
-    echo "❌ Docker n'est pas installé"
-    echo "   Installez Docker : https://docs.docker.com/get-docker/"
+    echo "❌ Docker is not installed"
+    echo "   Install Docker: https://docs.docker.com/get-docker/"
     exit 1
 fi
 
 if ! command -v docker-compose &> /dev/null; then
-    echo "❌ Docker Compose n'est pas installé"
-    echo "   Installez Docker Compose : https://docs.docker.com/compose/install/"
+    echo "❌ Docker Compose is not installed"
+    echo "   Install Docker Compose: https://docs.docker.com/compose/install/"
     exit 1
 fi
 
-# Arrête l'ancien container s'il existe
+# Stop old container if exists
 if docker ps -q -f name=adminer-custom | grep -q .; then
-    echo "🛑 Arrêt de l'ancien container adminer-custom..."
+    echo "🛑 Stopping old adminer-custom container..."
     docker stop adminer-custom
     docker rm adminer-custom
 fi
 
-# Création du réseau Docker si nécessaire
+# Create Docker network if needed
 if ! docker network ls | grep -q adminer-network; then
-    echo "🌐 Création du réseau Docker..."
+    echo "🌐 Creating Docker network..."
     docker network create adminer-network
 else
-    echo "ℹ️  Réseau Docker adminer-network existe déjà"
+    echo "ℹ️  Docker network adminer-network already exists"
 fi
 
-# Copie .env si il n'existe pas
+# Copy .env if it doesn't exist
 if [ ! -f .env ]; then
     cp .env.example .env
-    echo "✅ Fichier .env créé avec la configuration par défaut"
+    echo "✅ .env file created with default configuration"
 else
-    echo "ℹ️  Fichier .env existe déjà"
+    echo "ℹ️  .env file already exists"
 fi
 
-# Affiche la configuration
+# Display current configuration
 echo ""
-echo "📋 Configuration actuelle :"
+echo "📋 Current configuration:"
 if [ -f .env ]; then
     cat .env | grep -v "^#" | grep -v "^$"
 else
-    echo "   Port: 8081 (par défaut)"
+    echo "   Port: 8081 (default)"
 fi
 
 echo ""
-echo "🔨 Construction de l'image Docker..."
+echo "🔨 Building Docker image..."
 docker-compose build
 
 echo ""
-echo "🚀 Démarrage du service..."
+echo "🚀 Starting service..."
 docker-compose up -d
 
-# Vérification que le container fonctionne
+# Check if container is running
 sleep 3
 if docker ps | grep -q adminer-custom; then
     echo ""
-    echo "✅ Adminer Custom démarré avec succès !"
+    echo "✅ Adminer Custom started successfully!"
     echo ""
-    echo "📍 Accès: http://localhost:$(grep ADMINER_PORT .env 2>/dev/null | cut -d'=' -f2 || echo 8081)"
-    echo "🎯 Fonctionnalité: Tri DESC automatique sur la colonne 'id'"
+    echo "📍 Access: http://localhost:$(grep ADMINER_PORT .env 2>/dev/null | cut -d'=' -f2 || echo 8081)"
+    echo "🎯 Feature: Automatic DESC sort on 'id' column"
     echo ""
-    echo "💡 Commandes utiles :"
-    echo "   docker-compose logs -f     # Voir les logs"
-    echo "   docker-compose restart     # Redémarrer"
-    echo "   docker-compose down        # Arrêter"
+    echo "💡 Useful commands:"
+    echo "   docker-compose logs -f     # View logs"
+    echo "   docker-compose restart     # Restart"
+    echo "   docker-compose down        # Stop"
+    echo ""
+    echo "🔗 Repository: https://github.com/germain-italic/adminer-docker-custom"
     echo ""
 else
     echo ""
-    echo "❌ Erreur lors du démarrage"
-    echo "   Vérifiez les logs : docker-compose logs"
+    echo "❌ Error during startup"
+    echo "   Check logs: docker-compose logs"
     exit 1
 fi

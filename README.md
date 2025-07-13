@@ -1,79 +1,82 @@
-# Adminer Custom - Tri DESC par défaut
+# Adminer Custom - Default DESC Sort
 
-Adminer avec tri DESC par défaut sur les clés primaires.
+Adminer with automatic DESC sorting on primary keys by default.
 
-## Fonctionnalités
+## Features
 
-- ✅ Tri automatique en **DESC** sur la colonne `id` par défaut
-- ✅ Basé sur Adminer 5.3.0 (dernière version stable)
-- ✅ Configuration Docker simple
-- ✅ Redirection automatique pour forcer l'ordre DESC
+- ✅ Automatic **DESC** sorting on `id` column by default
+- ✅ Based on Adminer 5.3.0 (latest stable version)
+- ✅ Simple Docker configuration
+- ✅ Automatic redirection to force DESC order
 
-## Installation rapide
+## Quick Installation
 
 ```bash
-# Cloner ou télécharger ce projet
-git clone <votre-repo>
-cd adminer-custom
+# Clone the repository
+git clone https://github.com/germain-italic/adminer-docker-custom.git
+cd adminer-docker-custom
 
-# Setup automatique
+# Automatic setup
 chmod +x setup.sh
 ./setup.sh
 ```
 
-## Installation manuelle
+## Manual Installation
 
 ```bash
-# 1. Copier la configuration
+# 1. Copy configuration
 cp .env.example .env
 
-# 2. Modifier le port si nécessaire (optionnel)
+# 2. Modify port if needed (optional)
 nano .env
 
-# 3. Construire et démarrer
+# 3. Create Docker network
+docker network create adminer-network
+
+# 4. Build and start
 docker-compose up -d --build
 ```
 
-## Accès
+## Access
 
-- **URL** : http://localhost:8081
-- **Port par défaut** : 8081 (configurable dans `.env`)
+- **URL**: http://localhost:8081
+- **Default port**: 8081 (configurable in `.env`)
 
 ## Configuration
 
-### Variables d'environnement (`.env`)
+### Environment variables (`.env`)
 
 ```bash
-# Port d'écoute d'Adminer
+# Adminer listening port
 ADMINER_PORT=8081
 
-# Serveur de base de données par défaut (optionnel)
+# Default database server (optional)
 DB_HOST=localhost
 ```
 
-### Personnalisation du port
+### Port customization
 
 ```bash
-# Modifier le port dans .env
+# Change port in .env
 echo "ADMINER_PORT=8082" > .env
 
-# Redémarrer
+# Restart
 docker-compose down
 docker-compose up -d
 ```
 
-## Comment ça marche
+## How it works
 
-Le plugin intercepte les requêtes de sélection et :
+The plugin intercepts selection requests and:
 
-1. **Détecte** si aucun ordre n'est spécifié dans l'URL
-2. **Redirige** automatiquement avec `order[0]=id&desc[0]=1`
-3. **Force** le tri DESC sur la colonne `id` par défaut
+1. **Detects** if no order is specified in the URL
+2. **Redirects** automatically with `order[0]=id&desc[0]=1`
+3. **Forces** DESC sorting on the `id` column by default
 
-### Code du plugin
+### Plugin code
 
 ```php
-// Force DESC par défaut si aucun ordre spécifié
+// Force DESC by default if no order specified
 if (!isset($_GET["order"]) && isset($_GET["select"])) {
     if (!headers_sent()) {
         $current_url = $_SERVER['REQUEST_URI'];
@@ -87,80 +90,92 @@ if (!isset($_GET["order"]) && isset($_GET["select"])) {
 }
 ```
 
-## Commandes utiles
+## Useful commands
 
 ```bash
-# Voir les logs
+# View logs
 docker-compose logs -f
 
-# Redémarrer
+# Restart
 docker-compose restart
 
-# Arrêter
+# Stop
 docker-compose down
 
-# Reconstruire
+# Rebuild
 docker-compose up -d --build
 
-# Nettoyer
+# Clean up
 docker-compose down -v
 docker rmi adminer-custom_adminer
 ```
 
-## Résolution de problèmes
+## Troubleshooting
 
-### Port déjà utilisé
+### Port already in use
 
 ```bash
-# Changer le port dans .env
+# Change port in .env
 ADMINER_PORT=8082
 
-# Redémarrer
+# Restart
 docker-compose down && docker-compose up -d
 ```
 
-### Problème de réseau Docker
+### Docker network issue
 
 ```bash
-# Créer le réseau si nécessaire
+# Create network if needed
 docker network create adminer-network
 
-# Redémarrer
+# Restart
 docker-compose up -d
 ```
 
-### Réinitialiser complètement
+### Complete reset
 
 ```bash
-# Tout nettoyer
+# Clean everything
 docker-compose down -v
 docker rmi adminer-custom_adminer
 docker system prune -f
 
-# Relancer
+# Restart
 docker-compose up -d --build
 ```
 
-## Structure du projet
+## Project structure
 
 ```
 adminer-custom/
-├── docker-compose.yml    # Configuration Docker
-├── Dockerfile           # Image personnalisée
-├── custom-adminer.php   # Plugin de tri DESC
-├── setup.sh            # Script d'installation
-├── .env.example        # Configuration exemple
-├── .env                # Configuration locale
+├── docker-compose.yml    # Docker configuration
+├── Dockerfile           # Custom image
+├── custom-adminer.php   # DESC sort plugin
+├── setup.sh            # Installation script
+├── .env.example        # Example configuration
+├── .env                # Local configuration
 └── README.md           # Documentation
 ```
 
-## Compatibilité
+## Testing
+
+1. **Open**: http://localhost:8081
+2. **Connect** to your database
+3. **Select** a table
+4. **Verify**: Data is sorted in **DESC** order on the `id` column by default!
+
+## Compatibility
 
 - ✅ Adminer 5.3.0
 - ✅ PHP 8.x
 - ✅ Docker & Docker Compose
-- ✅ Toutes bases de données supportées par Adminer
+- ✅ All databases supported by Adminer
 
-## Licence
+## Repository
 
-Même licence qu'Adminer (Apache License 2.0)
+- **GitHub**: https://github.com/germain-italic/adminer-docker-custom
+- **Issues**: https://github.com/germain-italic/adminer-docker-custom/issues
+
+## License
+
+Same license as Adminer (Apache License 2.0)
