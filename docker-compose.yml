@@ -1,5 +1,14 @@
 version: '3.8'
 
+networks:
+  adminer-network:
+    external: true
+
+networks:
+  default:
+    external: true
+    name: bridge
+
 services:
   adminer:
     build: .
@@ -9,3 +18,5 @@ services:
     environment:
       - ADMINER_DEFAULT_SERVER=${DB_HOST:-localhost}
     restart: unless-stopped
+    networks:
+      - adminer-network
