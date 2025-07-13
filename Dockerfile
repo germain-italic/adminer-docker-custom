@@ -1,9 +1,12 @@
 FROM adminer:latest
 
-# Copie le plugin comme fichier séparé
-COPY custom-adminer.php /var/www/html/plugin.php
+# Copie le plugin personnalisé
+COPY custom-adminer.php /var/www/html/
 
-# Modifie l'index pour inclure le plugin
-RUN echo '<?php $plugins = array(); include "plugin.php"; include "index.php"; ?>' > /tmp/new_index.php && \
-    mv /var/www/html/index.php /var/www/html/adminer.php && \
-    mv /tmp/new_index.php /var/www/html/index.php
+# Crée un nouveau point d'entrée qui charge le plugin
+RUN echo '<?php' > /var/www/html/index.php && \
+    echo 'function adminer_object() {' >> /var/www/html/index.php && \
+    echo '    include_once "custom-adminer.php";' >> /var/www/html/index.php && \
+    echo '    return new AdminerCustom;' >> /var/www/html/index.php && \
+    echo '}' >> /var/www/html/index.php && \
+    echo 'include "adminer.php";' >> /var/www/html/index.php
