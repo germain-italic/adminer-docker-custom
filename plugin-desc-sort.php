@@ -5,8 +5,9 @@
  * Automatically sorts table data in DESC order on primary key column by default
  * 
  * @author italic
- * @version 3.2.0
+ * @version 4.0.0
  * @link https://github.com/germain-italic/adminer-docker-custom
+ * @compatible Adminer 5.3.0
  */
 
 class AdminerDescSort {
@@ -15,95 +16,46 @@ class AdminerDescSort {
      * Plugin name for display
      */
     function name() {
-        return "Default DESC Sort";
+        return "Default DESC Sort v4.0.0";
     }
     
     /**
-     * Plugin version
+     * Intercept all SQL queries and modify SELECT queries to add DESC sort
      */
-    function version() {
-        return "3.2.0";
-    }
-    
-    /**
-     * Modify the SELECT query to add default DESC ordering on primary key
-     */
-    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        try {
-            // Get current table from global variables
-            global $TABLE;
-            $table = $TABLE;
-            
-            if (empty($table)) {
-                return array($select, $where, $group, $order, $limit, $page);
+    function query($query, $start = 0) {
+        error_log("AdminerDescSort: Intercepting query: " . substr($query, 0, 100) . "...");
+        
+        // Only modify SELECT queries
+        if (preg_match('/^\s*SELECT\s+/i', $query)) {
+            // Check if ORDER BY already exists
+            if (!preg_match('/\bORDER\s+BY\b/i', $query)) {
+                // Try to detect table name from FROM clause
+                if (preg_match('/\bFROM\s+`?([a-zA-Z_][a-zA-Z0-9_]*)`?\s*/i', $query, $matches)) {
+                    $table = $matches[1];
+                    error_log("AdminerDescSort: Found table: $table");
+                    
+                    // Add ORDER BY id DESC (or table_id DESC)
+                    $primary_key = 'id';
+                    
+                    // Check if query contains LIMIT
+                    if (preg_match('/\bLIMIT\s+/i', $query)) {
+                        // Insert ORDER BY before LIMIT
+                        $modified_query = preg_replace('/(\s+LIMIT\s+)/i', " ORDER BY `$primary_key` DESC$1", $query);
+                    } else {
+                        // Add ORDER BY at the end
+                        $modified_query = rtrim($query, '; ') . " ORDER BY `$primary_key` DESC";
+                    }
+                    
+                    error_log("AdminerDescSort: Modified query: " . substr($modified_query, 0, 200) . "...");
+                    
+                    // Execute the modified query
+                    global $connection;
+                    return $connection->query($modified_query);
+                }
             }
-            
-            // If there's already an ORDER BY clause, don't modify
-            if (!empty($order)) {
-                return array($select, $where, $group, $order, $limit, $page);
-            }
-            
-            // Get database connection
-            global $connection;
-            if (!$connection) {
-                return array($select, $where, $group, $order, $limit, $page);
-            }
-            
-            // Find primary key column
-            $primary_key = $this->findPrimaryKey($table, $connection);
-            
-            if ($primary_key) {
-                $order = array($primary_key => 'DESC');
-                error_log("AdminerDescSort: Applied DESC sort on '$primary_key' for table '$table'");
-            }
-            
-        } catch (Exception $e) {
-            error_log("AdminerDescSort Error: " . $e->getMessage());
         }
         
-        return array($select, $where, $group, $order, $limit, $page);
-    }
-    
-    /**
-     * Find the primary key column for a table
-     */
-    private function findPrimaryKey($table, $connection) {
-        try {
-            // Method 1: Check indexes for PRIMARY KEY
-            $indexes = indexes($table);
-            if ($indexes) {
-                foreach ($indexes as $index) {
-                    if ($index['type'] === 'PRIMARY') {
-                        $columns = array_keys($index['columns']);
-                        if (!empty($columns)) {
-                            return $columns[0]; // Return first column of primary key
-                        }
-                    }
-                }
-            }
-            
-            // Method 2: Check table fields for AUTO_INCREMENT
-            $fields = fields($table);
-            if ($fields) {
-                foreach ($fields as $name => $field) {
-                    if ($field['auto_increment']) {
-                        return $name;
-                    }
-                }
-            }
-            
-            // Method 3: Common primary key names
-            $common_pk_names = array('id', $table . '_id', 'pk_' . $table);
-            foreach ($common_pk_names as $pk_name) {
-                if (isset($fields[$pk_name])) {
-                    return $pk_name;
-                }
-            }
-            
-        } catch (Exception $e) {
-            error_log("AdminerDescSort findPrimaryKey Error: " . $e->getMessage());
-        }
-        
-        return null;
+        // Return false to let Adminer handle the original query
+        return false;
     }
 }
