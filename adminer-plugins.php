@@ -1,1 +1,3 @@
-<?php return array(new AdminerDescSort);
+<?php
+// Plugin temporairement désactivé pour debug
+return array();
