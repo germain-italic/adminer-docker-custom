@@ -17,7 +17,7 @@ class AdminerDescSort {
      * @return string empty string to use default query
      */
     function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        // Si un tri est déjà défini, on ne fait rien
+        // Si un tri est déjà défini, on utilise la requête par défaut
         if (!empty($order)) {
             return "";
         }
@@ -50,7 +50,10 @@ class AdminerDescSort {
                 $primary_key = 'id';
             } else {
                 // Prendre la première colonne
-                $primary_key = array_keys($fields)[0];
+                $field_names = array_keys($fields);
+                if (!empty($field_names)) {
+                    $primary_key = $field_names[0];
+                }
             }
         }
         
@@ -62,19 +65,31 @@ class AdminerDescSort {
         $escaped_table = table($table);
         $escaped_pk = idf_escape($primary_key);
         
-        $query = "SELECT " . implode(", ", $select) . " FROM $escaped_table";
+        // Construire SELECT
+        $select_clause = "SELECT " . implode(", ", $select);
         
-        if ($where) {
-            $query .= " WHERE " . implode(" AND ", $where);
+        // Construire FROM
+        $from_clause = " FROM $escaped_table";
+        
+        // Construire WHERE
+        $where_clause = "";
+        if (!empty($where)) {
+            $where_clause = " WHERE " . implode(" AND ", $where);
         }
         
-        if ($group) {
-            $query .= " GROUP BY " . implode(", ", $group);
+        // Construire GROUP BY
+        $group_clause = "";
+        if (!empty($group)) {
+            $group_clause = " GROUP BY " . implode(", ", $group);
         }
         
         // Ajouter le tri DESC sur la clé primaire
-        $query .= " ORDER BY $escaped_pk DESC";
+        $order_clause = " ORDER BY $escaped_pk DESC";
         
+        // Construire la requête complète
+        $query = $select_clause . $from_clause . $where_clause . $group_clause . $order_clause;
+        
+        // Ajouter LIMIT si nécessaire
         if ($limit) {
             $query = limit($query, "", $limit, $page * $limit, " ");
         }
