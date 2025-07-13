@@ -36,7 +36,7 @@ class AdminerDescSort {
             $primary_key = $this->findPrimaryKey($TABLE);
             
             if ($primary_key) {
-                $order = array($primary_key => 'DESC');
+                $order = "`$primary_key` DESC";
             }
             
         } catch (Exception $e) {
