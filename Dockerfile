@@ -11,6 +11,7 @@ COPY plugin-desc-sort.php /var/www/html/plugin-desc-sort.php
 COPY custom-adminer.php /var/www/html/index.php
 
 # Expose le port 8080 (port standard d'Adminer)
+)
 EXPOSE 8080
 
 # Variables d'environnement par défaut
