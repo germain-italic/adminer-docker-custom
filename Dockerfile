@@ -12,5 +12,4 @@ RUN echo '<?php' > /tmp/index.php && \
     echo '}' >> /tmp/index.php && \
     echo 'include "adminer.php";' >> /tmp/index.php && \
     mv /var/www/html/index.php /var/www/html/adminer.php && \
-    mv /tmp/index.php /var/www/html/index.php && \
-    chown www-data:www-data /var/www/html/index.php
+    cp /tmp/index.php /var/www/html/index.php
