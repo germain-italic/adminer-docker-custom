@@ -3,7 +3,8 @@
 /**
  * Adminer Plugin: Default DESC Sort
  * 
- * Force DESC sorting on 'id' column by default when viewing table data
+ * Plugin universel pour forcer le tri DESC par défaut sur la colonne 'id'
+ * Compatible avec Docker et installations vanilla
  * 
  * @author italic
  * @version 1.0.0
@@ -26,27 +27,18 @@ if (!isset($_GET["order"]) && isset($_GET["select"])) {
 }
 
 /**
- * Plugin class pour Adminer
+ * Plugin class pour Adminer (optionnel)
  */
 class AdminerDescSort {
     
-    /**
-     * Nom du plugin
-     */
     function name() {
         return "Default DESC Sort";
     }
     
-    /**
-     * Version du plugin
-     */
     function version() {
         return "1.0.0";
     }
     
-    /**
-     * Description du plugin
-     */
     function description() {
         return "Automatically sorts table data in DESC order on 'id' column by default";
     }
