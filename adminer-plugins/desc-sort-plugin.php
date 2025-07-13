@@ -2,41 +2,39 @@
 
 /**
  * Adminer Plugin: Default DESC Sort
- * Version compatible avec l'architecture officielle d'Adminer
+ * Compatible avec Adminer 5.3.0
  */
 
 class AdminerDescSort {
     
     function name() {
-        return "Default DESC Sort";
+        return "Default DESC Sort v5.3.0";
     }
     
     /**
-     * Méthode correcte pour modifier les requêtes SELECT dans Adminer
+     * Test de compatibilité - affiche juste la version
+     */
+    function head() {
+        error_log("AdminerDescSort: Plugin loaded successfully for Adminer 5.3.0");
+        return "";
+    }
+    
+    /**
+     * Méthode pour Adminer 5.x - modification de la requête SELECT
      */
     function selectQuery($query, $start) {
-        // Log pour debug
-        error_log("AdminerDescSort: Original query = " . $query);
+        error_log("AdminerDescSort: selectQuery called with: " . $query);
         
-        // Si la requête contient déjà ORDER BY, on ne fait rien
+        // Si ORDER BY existe déjà, ne rien faire
         if (stripos($query, 'ORDER BY') !== false) {
-            error_log("AdminerDescSort: Query already has ORDER BY, skipping");
+            error_log("AdminerDescSort: ORDER BY already exists, skipping");
             return $query;
         }
         
-        // Extraire le nom de la table de la requête
-        if (preg_match('/FROM\s+`?(\w+)`?/i', $query, $matches)) {
-            $table = $matches[1];
-            error_log("AdminerDescSort: Found table = " . $table);
-            
-            // Ajouter ORDER BY id DESC à la fin de la requête
-            $modified_query = rtrim($query, '; ') . ' ORDER BY `id` DESC';
-            error_log("AdminerDescSort: Modified query = " . $modified_query);
-            
-            return $modified_query;
-        }
+        // Ajouter ORDER BY id DESC
+        $modified = rtrim($query, '; ') . ' ORDER BY `id` DESC';
+        error_log("AdminerDescSort: Modified query: " . $modified);
         
-        error_log("AdminerDescSort: Could not extract table name, returning original query");
-        return $query;
+        return $modified;
     }
 }
