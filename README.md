@@ -11,6 +11,33 @@ Adminer with automatic DESC sorting on primary keys by default.
 
 ## Quick Installation
 
+### Option 1: Using Docker Hub (Recommended)
+
+```bash
+# Create network
+docker network create adminer-network
+
+# Run directly from Docker Hub
+docker run -d \
+  --name adminer-custom \
+  --network adminer-network \
+  -p 8081:8080 \
+  germainitalic/adminer-desc-sort:latest
+```
+
+### Option 2: Using Docker Compose with Docker Hub
+
+```bash
+# Download docker-compose.hub.yml
+curl -O https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/docker-compose.hub.yml
+
+# Create network and start
+docker network create adminer-network
+docker-compose -f docker-compose.hub.yml up -d
+```
+
+### Option 3: Build from source
+
 ```bash
 # Clone the repository
 git clone https://github.com/germain-italic/adminer-docker-custom.git
@@ -21,7 +48,7 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-## Manual Installation
+## Manual Installation (Build from source)
 
 ```bash
 # 1. Copy configuration
@@ -36,6 +63,12 @@ docker network create adminer-network
 # 4. Build and start
 docker-compose up -d --build
 ```
+
+## Docker Hub
+
+- **Image**: `germainitalic/adminer-desc-sort`
+- **Tags**: `latest`, `1.0.0`
+- **Docker Hub**: https://hub.docker.com/r/germainitalic/adminer-desc-sort
 
 ## Access
 

@@ -1,0 +1,17 @@
+version: '3.8'
+
+networks:
+  adminer-network:
+    external: true
+
+services:
+  adminer:
+    image: germainitalic/adminer-desc-sort:latest
+    container_name: adminer-custom
+    ports:
+      - "${ADMINER_PORT:-8081}:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=${DB_HOST:-localhost}
+    restart: unless-stopped
+    networks:
+      - adminer-network
