@@ -12,14 +12,6 @@ class AdminerDescSort {
     }
     
     /**
-     * Test de compatibilité - affiche juste la version
-     */
-    function head() {
-        error_log("AdminerDescSort: Plugin loaded successfully for Adminer 5.3.0");
-        return "";
-    }
-    
-    /**
      * Méthode pour Adminer 5.x - modification de la requête SELECT
      */
     function selectQuery($query, $start) {
