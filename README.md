@@ -5,9 +5,10 @@ Adminer with automatic DESC sorting on primary keys by default.
 ## Features
 
 - ✅ Automatic **DESC** sorting on `id` column by default
-- ✅ Based on Adminer 5.3.0 (latest stable version)
+- ✅ Based on Adminer 4.8.1 (stable version)
 - ✅ Simple Docker configuration
 - ✅ Automatic redirection to force DESC order
+- ✅ Available on Docker Hub for instant use
 
 ## Quick Installation
 
@@ -123,24 +124,88 @@ if (!isset($_GET["order"]) && isset($_GET["select"])) {
 }
 ```
 
+## Usage Examples
+
+### Quick test with Docker
+
+```bash
+# Start Adminer with DESC sort
+docker run -p 8081:8080 italic/adminer-desc-sort
+
+# Access: http://localhost:8081
+```
+
+### With existing database network
+
+```bash
+# Connect to existing database network
+docker run -d \
+  --name adminer-custom \
+  --network your-db-network \
+  -p 8081:8080 \
+  italic/adminer-desc-sort
+```
+
+### With environment variables
+
+```bash
+# Set default database server
+docker run -d \
+  --name adminer-custom \
+  -p 8081:8080 \
+  -e ADMINER_DEFAULT_SERVER=your-db-host \
+  italic/adminer-desc-sort
+```
+
 ## Useful commands
 
 ```bash
 # View logs
-docker-compose logs -f
+docker logs adminer-custom
 
 # Restart
-docker-compose restart
+docker restart adminer-custom
 
-# Stop
-docker-compose down
+# Stop and remove
+docker stop adminer-custom
+docker rm adminer-custom
 
-# Rebuild
-docker-compose up -d --build
+# Update to latest version
+docker pull italic/adminer-desc-sort:latest
+docker stop adminer-custom
+docker rm adminer-custom
+docker run -d --name adminer-custom -p 8081:8080 italic/adminer-desc-sort:latest
+```
 
-# Clean up
-docker-compose down -v
-docker rmi adminer-custom_adminer
+## Development
+
+### Build locally
+
+```bash
+# Clone repository
+git clone https://github.com/germain-italic/adminer-docker-custom.git
+cd adminer-docker-custom
+
+# Build image
+docker build -t italic/adminer-desc-sort:local .
+
+# Test locally
+docker run -p 8081:8080 italic/adminer-desc-sort:local
+```
+
+### Publish to Docker Hub
+
+```bash
+# Login to Docker Hub
+docker login
+
+# Build and tag
+docker build -t italic/adminer-desc-sort:1.0.0 .
+docker build -t italic/adminer-desc-sort:latest .
+
+# Push to Docker Hub
+docker push italic/adminer-desc-sort:1.0.0
+docker push italic/adminer-desc-sort:latest
 ```
 
 ## Troubleshooting
@@ -148,11 +213,8 @@ docker rmi adminer-custom_adminer
 ### Port already in use
 
 ```bash
-# Change port in .env
-ADMINER_PORT=8082
-
-# Restart
-docker-compose down && docker-compose up -d
+# Use different port
+docker run -p 8082:8080 italic/adminer-desc-sort
 ```
 
 ### Docker network issue
@@ -161,54 +223,88 @@ docker-compose down && docker-compose up -d
 # Create network if needed
 docker network create adminer-network
 
-# Restart
-docker-compose up -d
+# Connect to network
+docker run -d --name adminer-custom --network adminer-network -p 8081:8080 italic/adminer-desc-sort
+```
+
+### Database connection issues
+
+```bash
+# Check if database is accessible
+docker run --rm --network your-db-network alpine ping your-db-host
+
+# Use host networking (Linux only)
+docker run --network host italic/adminer-desc-sort
 ```
 
 ### Complete reset
 
 ```bash
-# Clean everything
-docker-compose down -v
-docker rmi adminer-custom_adminer
-docker system prune -f
+# Remove everything
+docker stop adminer-custom
+docker rm adminer-custom
+docker rmi italic/adminer-desc-sort
 
-# Restart
-docker-compose up -d --build
+# Start fresh
+docker run -d --name adminer-custom -p 8081:8080 italic/adminer-desc-sort:latest
 ```
 
 ## Project structure
 
 ```
-adminer-custom/
-├── docker-compose.yml    # Docker configuration
-├── Dockerfile           # Custom image
-├── custom-adminer.php   # DESC sort plugin
-├── setup.sh            # Installation script
-├── .env.example        # Example configuration
-├── .env                # Local configuration
-└── README.md           # Documentation
+adminer-docker-custom/
+├── docker-compose.yml        # Local build configuration
+├── docker-compose.hub.yml    # Docker Hub configuration
+├── Dockerfile               # Custom image build
+├── custom-adminer.php       # DESC sort plugin
+├── setup.sh                # Installation script
+├── .env.example            # Example configuration
+├── .env                    # Local configuration
+└── README.md               # Documentation
 ```
 
 ## Testing
 
-1. **Open**: http://localhost:8081
-2. **Connect** to your database
-3. **Select** a table
-4. **Verify**: Data is sorted in **DESC** order on the `id` column by default!
+1. **Start Adminer**: `docker run -p 8081:8080 italic/adminer-desc-sort`
+2. **Open**: http://localhost:8081
+3. **Connect** to your database
+4. **Select** a table
+5. **Verify**: Data is sorted in **DESC** order on the `id` column by default!
 
 ## Compatibility
 
-- ✅ Adminer 5.3.0
+- ✅ Adminer 4.8.1
 - ✅ PHP 8.x
 - ✅ Docker & Docker Compose
 - ✅ All databases supported by Adminer
+- ✅ Linux, macOS, Windows (Docker Desktop)
+
+## Versions
+
+- **v1.0.0**: Initial release with DESC sort functionality
+- **latest**: Always points to the most recent stable version
 
 ## Repository
 
 - **GitHub**: https://github.com/germain-italic/adminer-docker-custom
+- **Docker Hub**: https://hub.docker.com/r/italic/adminer-desc-sort
 - **Issues**: https://github.com/germain-italic/adminer-docker-custom/issues
 
 ## License
 
 Same license as Adminer (Apache License 2.0)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with Docker
+5. Submit a pull request
+
+## Support
+
+- 📖 **Documentation**: This README
+- 🐛 **Issues**: GitHub Issues
+- 💬 **Discussions**: GitHub Discussions
+- 🐳 **Docker Hub**: https://hub.docker.com/r/italic/adminer-desc-sort
