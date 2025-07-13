@@ -27,7 +27,7 @@ mkdir adminer-plugins
 wget -O adminer-plugins/desc-sort-plugin.php https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
 
 # 3. Create plugin configuration file
-echo '<?php include_once "plugin-desc-sort.php"; return array(new AdminerDescSort);' > adminer-plugins.php
+echo '<?php include_once "adminer-plugins/desc-sort-plugin.php"; return array(new AdminerDescSort);' > adminer-plugins.php
 ```
 
 ### Option 3: Build from source
