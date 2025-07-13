@@ -19,16 +19,16 @@ docker-compose -f docker-compose.hub.yml up -d
 
 ```bash
 # 1. Download the plugin
-wget https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/plugin-desc-sort.php
+wget https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
 
 # 2. Create plugins directory
 mkdir -p adminer-plugins
 
 # 3. Move the plugin
-mv plugin-desc-sort.php adminer-plugins/
+mv desc-sort-plugin.php adminer-plugins/
 
 # 4. Create configuration file
-echo '<?php return array(new AdminerDescSort);' > adminer-plugins.php
+echo '<?php include_once "adminer-plugins/desc-sort-plugin.php"; return array(new AdminerDescSort);' > adminer-plugins.php
 ```
 
 ### Option 3: Build from source
