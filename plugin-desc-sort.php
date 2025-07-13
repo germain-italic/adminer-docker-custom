@@ -3,8 +3,8 @@
 /**
  * Adminer Plugin: Default DESC Sort
  * 
- * Plugin pour forcer le tri DESC par défaut sur la colonne 'id'
- * Compatible avec l'architecture standard des plugins Adminer
+ * Plugin to force DESC sorting by default on the 'id' column
+ * Compatible with standard Adminer plugin architecture
  * 
  * @author italic
  * @version 2.0.0
@@ -14,58 +14,58 @@
 class AdminerDescSort {
     
     /**
-     * Nom du plugin
+     * Plugin name
      */
     function name() {
         return "Default DESC Sort";
     }
     
     /**
-     * Version du plugin
+     * Plugin version
      */
     function version() {
         return "2.0.0";
     }
     
     /**
-     * Description du plugin
+     * Plugin description
      */
     function description() {
         return "Automatically sorts table data in DESC order on 'id' column by default";
     }
     
     /**
-     * Modifie l'ordre de tri par défaut pour les sélections
-     * Cette méthode est appelée avant l'affichage des données d'une table
+     * Modifies the default sort order for selections
+     * This method is called before displaying table data
      */
     function selectOrderPrint($order, $columns, $indexes) {
-        // Si aucun ordre n'est spécifié et qu'on a une colonne 'id'
+        // If no order is specified and we have an 'id' column
         if (empty($order) && isset($columns['id'])) {
-            // Force le tri DESC sur la colonne 'id'
+            // Force DESC sort on 'id' column
             $_GET['order'][0] = 'id';
             $_GET['desc'][0] = '1';
         }
         
-        // Laisse Adminer gérer l'affichage normal
+        // Let Adminer handle normal display
         return false;
     }
     
     /**
-     * Modifie la requête SELECT pour appliquer l'ordre par défaut
+     * Modifies the SELECT query to apply default order
      */
     function selectQuery($query, $start) {
-        // Si aucun ORDER BY n'est présent dans la requête et qu'on a une table avec 'id'
+        // If no ORDER BY is present in the query and we have a table with 'id'
         if (stripos($query, 'ORDER BY') === false && 
             preg_match('/FROM\s+`?(\w+)`?/i', $query, $matches)) {
             
             $table = $matches[1];
             
-            // Vérifie si la table a une colonne 'id'
+            // Check if the table has an 'id' column
             global $connection;
             if ($connection) {
                 $fields = fields($table);
                 if (isset($fields['id'])) {
-                    // Ajoute ORDER BY id DESC à la requête
+                    // Add ORDER BY id DESC to the query
                     $query = rtrim($query, '; ') . ' ORDER BY `id` DESC';
                 }
             }
@@ -75,5 +75,5 @@ class AdminerDescSort {
     }
 }
 
-// Retourne une instance du plugin
+// Return plugin instance
 return new AdminerDescSort;

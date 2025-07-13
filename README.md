@@ -1,37 +1,37 @@
 # Adminer Custom - Default DESC Sort
 
-Adminer avec tri automatique DESC sur les clés primaires par défaut.
+Adminer with automatic DESC sorting on primary keys by default.
 
-## 🚀 Installation rapide
+## 🚀 Quick Installation
 
-### Option 1: Docker Hub (Recommandé)
+### Option 1: Docker Hub (Recommended)
 
 ```bash
-# Lancement direct
+# Direct launch
 docker run -p 8081:8080 italic/adminer-desc-sort
 
-# Ou avec docker-compose
+# Or with docker-compose
 curl -O https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/docker-compose.hub.yml
 docker-compose -f docker-compose.hub.yml up -d
 ```
 
-### Option 2: Installation manuelle
+### Option 2: Manual Installation
 
 ```bash
-# 1. Télécharger le plugin
+# 1. Download the plugin
 wget https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/plugin-desc-sort.php
 
-# 2. Créer le répertoire des plugins
+# 2. Create plugins directory
 mkdir -p adminer-plugins
 
-# 3. Déplacer le plugin
+# 3. Move the plugin
 mv plugin-desc-sort.php adminer-plugins/
 
-# 4. Créer le fichier de configuration
+# 4. Create configuration file
 echo '<?php return array(new AdminerDescSort);' > adminer-plugins.php
 ```
 
-### Option 3: Build depuis les sources
+### Option 3: Build from source
 
 ```bash
 git clone https://github.com/germain-italic/adminer-docker-custom.git
@@ -40,38 +40,38 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-## ✨ Fonctionnalités
+## ✨ Features
 
-- ✅ Tri automatique **DESC** sur la colonne `id` par défaut
-- ✅ Compatible avec l'architecture standard des plugins Adminer
-- ✅ Basé sur Adminer 5.x (toujours la dernière version stable)
-- ✅ Aucune modification d'Adminer requise
+- ✅ Automatic **DESC** sorting on `id` column by default
+- ✅ Compatible with standard Adminer plugin architecture
+- ✅ Based on Adminer 5.x (always latest stable version)
+- ✅ No Adminer modifications required
 
-## 🔧 Comment ça marche
+## 🔧 How it works
 
-Le plugin utilise l'architecture standard d'Adminer :
-- Se place dans `adminer-plugins/`
-- Se charge via `adminer-plugins.php`
-- Modifie automatiquement les requêtes SELECT pour ajouter `ORDER BY id DESC`
+The plugin uses Adminer's standard architecture:
+- Placed in `adminer-plugins/`
+- Loaded via `adminer-plugins.php`
+- Automatically modifies SELECT queries to add `ORDER BY id DESC`
 
-## 🌐 Accès
+## 🌐 Access
 
-- **URL par défaut** : http://localhost:8081
-- **Port** : Configurable via la variable `ADMINER_PORT`
+- **Default URL**: http://localhost:8081
+- **Port**: Configurable via `ADMINER_PORT` variable
 
 ## ⚙️ Configuration
 
-### Variables d'environnement
+### Environment variables
 
 ```bash
-# Port (défaut: 8081)
+# Port (default: 8081)
 ADMINER_PORT=8081
 
-# Serveur de base de données par défaut (optionnel)
+# Default database server (optional)
 DB_HOST=localhost
 ```
 
-### Port personnalisé
+### Custom port
 
 ```bash
 # Docker
@@ -82,40 +82,40 @@ echo "ADMINER_PORT=8082" > .env
 docker-compose up -d
 ```
 
-## 🛠️ Développement
+## 🛠️ Development
 
-### Build local
+### Local build
 
 ```bash
 docker build -t italic/adminer-desc-sort:local .
 docker run -p 8081:8080 italic/adminer-desc-sort:local
 ```
 
-## 🧪 Test
+## 🧪 Testing
 
-1. Démarrer Adminer : `docker run -p 8081:8080 italic/adminer-desc-sort`
-2. Ouvrir : http://localhost:8081
-3. Se connecter à votre base de données
-4. Sélectionner une table
-5. Vérifier : Les données sont triées DESC sur la colonne `id` par défaut !
+1. Start Adminer: `docker run -p 8081:8080 italic/adminer-desc-sort`
+2. Open: http://localhost:8081
+3. Connect to your database
+4. Select a table
+5. Verify: Data is sorted DESC on `id` column by default!
 
-## 📁 Structure du projet
+## 📁 Project structure
 
 ```
-├── docker-compose.yml        # Build local
-├── docker-compose.hub.yml    # Image Docker Hub
-├── Dockerfile               # Construction de l'image
-├── plugin-desc-sort.php     # Plugin Adminer
-├── setup.sh                # Script d'installation automatique
-└── README.md               # Ce fichier
+├── docker-compose.yml        # Local build
+├── docker-compose.hub.yml    # Docker Hub image
+├── Dockerfile               # Image construction
+├── plugin-desc-sort.php     # Adminer plugin
+├── setup.sh                # Automatic installation script
+└── README.md               # This file
 ```
 
-## 📄 Licence
+## 📄 License
 
-Apache License 2.0 (identique à Adminer)
+Apache License 2.0 (same as Adminer)
 
-## 🔗 Liens
+## 🔗 Links
 
-- **GitHub** : https://github.com/germain-italic/adminer-docker-custom
-- **Docker Hub** : https://hub.docker.com/r/italic/adminer-desc-sort
-- **Issues** : https://github.com/germain-italic/adminer-docker-custom/issues
+- **GitHub**: https://github.com/germain-italic/adminer-docker-custom
+- **Docker Hub**: https://hub.docker.com/r/italic/adminer-desc-sort
+- **Issues**: https://github.com/germain-italic/adminer-docker-custom/issues
