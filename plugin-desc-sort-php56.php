@@ -26,25 +26,4 @@ if (!isset($_GET["order"]) && isset($_GET["select"])) {
     }
 }
 
-/**
- * Plugin class pour Adminer (compatible PHP 5.6)
- */
-if (class_exists('AdminerPlugin')) {
-    class AdminerDescSort extends AdminerPlugin {
-        
-        function name() {
-            return "Default DESC Sort";
-        }
-        
-        function version() {
-            return "1.1.0";
-        }
-        
-        function description() {
-            return "Automatically sorts table data in DESC order on 'id' column by default (PHP 5.6 compatible)";
-        }
-    }
-    
-    // Retourner une instance du plugin
-    return new AdminerDescSort;
-}
+// Le reste du code Adminer sera inclus après
