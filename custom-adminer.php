@@ -17,3 +17,6 @@ namespace docker {
         }
     }
 }
+
+// Retourne une instance du plugin pour le système de plugins d'Adminer
+return new \docker\AdminerCustomSort;
