@@ -37,8 +37,6 @@ git clone https://github.com/germain-italic/adminer-docker-custom.git
 cd adminer-docker-custom
 chmod +x setup.sh
 ./setup.sh
-```
-
 ## ✨ Features
 
 - ✅ Automatic **DESC** sorting on `id` column by default
