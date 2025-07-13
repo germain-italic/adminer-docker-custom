@@ -1,4 +1,4 @@
 FROM adminer:latest
 
-# Copie le plugin personnalisé dans le dossier plugins-enabled
-COPY custom-adminer.php /var/www/html/plugins-enabled/
+# Copie le fichier principal qui remplace index.php
+COPY custom-adminer.php /var/www/html/index.php

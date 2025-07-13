@@ -1,26 +1,36 @@
 <?php
-namespace docker {
-    class AdminerCustomSort extends \Adminer\Plugin {
-        function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-            // Si aucun ordre spécifié, ajoute un tri DESC sur la première colonne qui ressemble à un ID
-            if (!$order) {
-                // Essaie de trouver une colonne ID dans les colonnes sélectionnées
-                foreach ($select as $key => $val) {
-                    if (preg_match('/\bid\b/i', $key) || preg_match('/\w*id$/i', $key)) {
-                        $order = array($key => true); // true = DESC
-                        break;
+
+/** @return AdminerPlugin */
+function adminer_object() {
+    include_once "./plugins/plugin.php";
+    
+    class AdminerCustomSort extends AdminerPlugin {
+        function selectOrderPrint($order, $columns, $indexes) {
+            return "";
+        }
+        
+        function selectQuery($query, $start, $failed = false) {
+            // Ajoute ORDER BY si pas présent
+            if (!preg_match('/ORDER\s+BY/i', $query)) {
+                // Cherche une colonne id
+                if (preg_match('/SELECT.*\bid\b/i', $query)) {
+                    $query = rtrim($query, ';') . " ORDER BY id DESC";
+                }
+                // Sinon cherche la première colonne
+                else if (preg_match('/SELECT\s+(.+?)\s+FROM/i', $query, $matches)) {
+                    $columns = trim($matches[1]);
+                    if ($columns !== '*') {
+                        $first_col = explode(',', $columns)[0];
+                        $first_col = trim(str_replace('`', '', $first_col));
+                        $query = rtrim($query, ';') . " ORDER BY `$first_col` DESC";
                     }
                 }
-                // Si pas d'ID trouvé, utilise la première colonne
-                if (!$order && $select) {
-                    $first_column = array_keys($select)[0];
-                    $order = array($first_column => true); // true = DESC
-                }
             }
-            return parent::selectQueryBuild($select, $where, $group, $order, $limit, $page);
+            return $query;
         }
     }
-
-    // Retourne une instance du plugin pour le système de plugins d'Adminer
+    
     return new AdminerCustomSort;
 }
+
+include "./adminer.php";
