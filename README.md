@@ -22,7 +22,7 @@ docker run -d \
   --name adminer-custom \
   --network adminer-network \
   -p 8081:8080 \
-  germainitalic/adminer-desc-sort:latest
+  italic/adminer-desc-sort:latest
 ```
 
 ### Option 2: Using Docker Compose with Docker Hub
@@ -66,9 +66,9 @@ docker-compose up -d --build
 
 ## Docker Hub
 
-- **Image**: `germainitalic/adminer-desc-sort`
+- **Image**: `italic/adminer-desc-sort`
 - **Tags**: `latest`, `1.0.0`
-- **Docker Hub**: https://hub.docker.com/r/germainitalic/adminer-desc-sort
+- **Docker Hub**: https://hub.docker.com/r/italic/adminer-desc-sort
 
 ## Access
 

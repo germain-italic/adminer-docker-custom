@@ -6,7 +6,7 @@ networks:
 
 services:
   adminer:
-    image: germainitalic/adminer-desc-sort:latest
+    image: italic/adminer-desc-sort:latest
     container_name: adminer-custom
     ports:
       - "${ADMINER_PORT:-8081}:8080"

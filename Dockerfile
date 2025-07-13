@@ -1,7 +1,7 @@
 FROM adminer:4.8.1
 
 # Métadonnées
-LABEL maintainer="germain-italic"
+LABEL maintainer="italic"
 LABEL description="Adminer with automatic DESC sorting on primary keys"
 LABEL version="1.0.0"
 LABEL repository="https://github.com/germain-italic/adminer-docker-custom"
