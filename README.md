@@ -19,9 +19,14 @@ docker-compose -f docker-compose.hub.yml up -d
 
 ```bash
 # Download the plugin
+# For PHP 7+ (recommended)
 wget https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/plugin-desc-sort.php
 
-# Add to your existing index.php (at the beginning)
+# For PHP 5.6 (legacy)
+wget https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/plugin-desc-sort-php56.php
+mv plugin-desc-sort-php56.php plugin-desc-sort.php
+
+# Then include it
 echo '<?php include "plugin-desc-sort.php"; ?>' | cat - index.php > temp && mv temp index.php
 ```
 
