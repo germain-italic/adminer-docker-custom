@@ -17,8 +17,6 @@ class AdminerDescSort {
      * @return string empty string to use default query
      */
     function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        global $adminer;
-        
         // Si un tri est déjà défini, on utilise la requête par défaut
         if (!empty($order)) {
             return "";
@@ -37,8 +35,14 @@ class AdminerDescSort {
         $table = $_GET['select'];
         
         try {
-            // Utiliser l'API Adminer pour récupérer les champs
-            $fields = $adminer->fields($table);
+            // Utiliser connection() pour accéder à la base de données
+            $connection = connection();
+            if (!$connection) {
+                return "";
+            }
+            
+            // Récupérer les champs de la table
+            $fields = fields($table);
             if (!$fields) {
                 return "";
             }
@@ -70,8 +74,8 @@ class AdminerDescSort {
             }
             
             // Construire la requête avec ORDER BY DESC
-            $escaped_table = $adminer->table($table);
-            $escaped_pk = $adminer->idf_escape($primary_key);
+            $escaped_table = table($table);
+            $escaped_pk = idf_escape($primary_key);
             
             // Construire SELECT
             $select_clause = "SELECT " . implode(", ", $select);
@@ -100,7 +104,7 @@ class AdminerDescSort {
             // Ajouter LIMIT si nécessaire
             if ($limit > 0) {
                 $offset = $page ? $page * $limit : 0;
-                $query = $adminer->limit($query, "", $limit, $offset, " ");
+                $query = limit($query, "", $limit, $offset, " ");
             }
             
             return $query;
