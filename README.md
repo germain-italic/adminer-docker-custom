@@ -24,12 +24,7 @@ mv adminer-5.3.0.php index.php
 
 # 2. Download the plugin
 mkdir adminer-plugins
-wget -O adminer-plugins/desc-sort-plugin.php https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
-
-# 3. Create plugin loader
-echo '<?php
-require_once "adminer-plugins/desc-sort-plugin.php";
-return new AdminerDescSort;' > adminer-plugins.php
+wget -O adminer-plugins/desc-sort.php https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
 ```
 
 ### Option 3: Build from source
@@ -53,22 +48,15 @@ chmod +x setup.sh
 
 ## 🔧 How it works
 
-The plugin uses Adminer's standard architecture:
-- Main plugin: `adminer-plugins/desc-sort-plugin.php`
-- Loaded via: `adminer-plugins.php` configuration file
-- Automatically detects primary key and adds `ORDER BY primary_key DESC`
-- Only applies when no user-defined order exists
-- Falls back to any column containing "id" if no primary key found
-
-### Technical Details
-
-The plugin hooks into Adminer's `selectQueryBuild` method to:
+Adminer automatically loads plugins from the `adminer-plugins/` directory. The plugin hooks into Adminer's `selectQueryBuild` method to:
 
 1. **Check for existing order**: If user clicked a column header, respect their choice
 2. **Detect primary key**: Query `SHOW COLUMNS` to find the primary key
 3. **Fallback strategy**: If no primary key, look for columns containing "id"
 4. **Build query**: Construct complete SELECT with `ORDER BY column DESC`
 5. **Error handling**: Return empty string to use default query if anything fails
+
+### Technical Details
 
 The plugin uses proper Adminer namespace functions:
 - `\Adminer\connection()` for database access
@@ -113,13 +101,13 @@ docker run -p 8081:8080 italic/adminer-desc-sort:local
 
 ### Plugin Development
 
-The plugin follows Adminer's plugin architecture:
+Adminer automatically loads `.php` files from the `adminer-plugins/` directory. Each plugin must:
 
 ```php
-class AdminerDescSort {
-    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
+class PluginName {
+    function methodName($params) {
         // Plugin logic here
-        return $custom_query; // Or "" for default
+        return $result; // Or "" for default behavior
     }
 }
 ```
@@ -161,24 +149,32 @@ Key considerations:
 ## 🐛 Troubleshooting
 
 ### Plugin not loading
-- Check that `adminer-plugins.php` exists and loads the plugin
-- Verify plugin file path and permissions
-- Check PHP error logs for syntax errors
+- **Check plugins directory**: Verify `adminer-plugins/` exists next to `index.php`
+- **Verify file permissions**: Ensure plugin files are readable by web server
+- **Check PHP syntax**: Verify plugin file has no syntax errors
+- **Review logs**: Check PHP error logs for detailed error messages
 
 ### No DESC sorting
-- Verify table has a primary key or "id" column
-- Check browser network tab for custom ORDER BY in queries
-- Ensure you're viewing fresh table (not after clicking columns)
+- **Verify table structure**: Check table has a primary key or "id" column
+- **Check browser network**: Look for custom ORDER BY in SQL queries
+- **Fresh table view**: Ensure you're viewing fresh table (not after clicking columns)
+- **Database support**: Verify your database supports SHOW COLUMNS syntax
 
 ### Connection errors
-- Plugin uses `\Adminer\connection()` - ensure Adminer is properly loaded
-- Check database connectivity outside the plugin
-- Verify namespace usage: `\Adminer\connection()` not `connection()`
+- **Plugin namespace**: Ensure `\Adminer\connection()` is used with proper namespace
+- **Database connectivity**: Test database connection outside the plugin
+- **Function availability**: Verify Adminer functions are accessible in plugin context
 
 ### PHP Fatal Errors
-- Ensure PHP 7.0+ compatibility
-- Check that Adminer namespace functions are available
-- Verify plugin returns empty string on error, not null
+- **PHP compatibility**: Ensure PHP 7.0+ compatibility
+- **Namespace usage**: Check that all Adminer functions use full namespace
+- **Error handling**: Verify plugin returns empty string on error, not null
+- **Function existence**: Ensure all used functions exist in current Adminer version
+
+### Docker specific issues
+- **Container rebuild**: Try rebuilding the Docker image completely
+- **Plugin location**: Verify plugin is in `/var/www/html/adminer-plugins/`
+- **File permissions**: Check that www-data user can read plugin files
 
 ## 📄 License
 
