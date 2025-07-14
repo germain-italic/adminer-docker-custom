@@ -245,18 +245,18 @@ git push origin master
 #### 2. Build and Publish Docker Image
 
 ```bash
-# Build for multiple architectures
-docker buildx create --use --name multiarch
-docker buildx build --platform linux/amd64,linux/arm64 \
-  -t italic/adminer-desc-sort:2.1.0 \
-  -t italic/adminer-desc-sort:latest \
-  --push .
-
-# Or simple build for current architecture
+# Simple build for current architecture
 docker build -t italic/adminer-desc-sort:2.1.0 .
 docker build -t italic/adminer-desc-sort:latest .
 docker push italic/adminer-desc-sort:2.1.0
 docker push italic/adminer-desc-sort:latest
+
+# For multi-architecture builds (requires Docker Buildx):
+# docker buildx create --use --name multiarch
+# docker buildx build --platform linux/amd64,linux/arm64 \
+#   -t italic/adminer-desc-sort:2.1.0 \
+#   -t italic/adminer-desc-sort:latest \
+#   --push .
 ```
 
 #### 3. Create GitHub Release
