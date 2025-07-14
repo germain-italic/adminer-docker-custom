@@ -12,6 +12,9 @@ RUN mkdir -p /var/www/html/adminer-plugins
 # Copy plugin to standard directory
 COPY adminer-plugins/desc-sort-plugin.php /var/www/html/adminer-plugins/
 
+# Create plugin loader file
+RUN echo '<?php\nrequire_once "adminer-plugins/desc-sort-plugin.php";\nreturn new AdminerDescSort;' > /var/www/html/adminer-plugins.php
+
 # Use root temporarily for permissions
 USER root
 

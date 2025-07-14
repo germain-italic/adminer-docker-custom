@@ -25,6 +25,11 @@ mv adminer-5.3.0.php index.php
 # 2. Download the plugin
 mkdir adminer-plugins
 wget -O adminer-plugins/desc-sort-plugin.php https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
+
+# 3. Create plugin loader
+echo '<?php
+require_once "adminer-plugins/desc-sort-plugin.php";
+return new AdminerDescSort;' > adminer-plugins.php
 ```
 
 ### Option 3: Build from source
@@ -49,7 +54,8 @@ chmod +x setup.sh
 ## 🔧 How it works
 
 The plugin uses Adminer's standard architecture:
-- Placed in `adminer-plugins/` directory
+- Main plugin: `adminer-plugins/desc-sort-plugin.php`
+- Loaded via: `adminer-plugins.php` configuration file
 - Automatically detects primary key and adds `ORDER BY primary_key DESC`
 - Only applies when no user-defined order exists
 - Falls back to any column containing "id" if no primary key found
@@ -155,7 +161,7 @@ Key considerations:
 ## 🐛 Troubleshooting
 
 ### Plugin not loading
-- Check that `adminer-plugins/` directory exists and is readable
+- Check that `adminer-plugins.php` exists and loads the plugin
 - Verify plugin file path and permissions
 - Check PHP error logs for syntax errors
 
