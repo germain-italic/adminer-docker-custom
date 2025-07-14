@@ -1,7 +1,5 @@
 <?php
 
-namespace Adminer;
-
 /**
  * Plugin Adminer pour tri DESC automatique sur clé primaire
  * Compatible PHP 7.0+ et Adminer 4.x/5.x
