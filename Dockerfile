@@ -1,31 +1,31 @@
 FROM adminer:5
 
-# Métadonnées
+# Metadata
 LABEL maintainer="italic"
 LABEL description="Adminer with automatic DESC sorting on primary keys"
 LABEL version="2.0.0"
 LABEL repository="https://github.com/germain-italic/adminer-docker-custom"
 
-# Crée le répertoire des plugins
+# Create plugins directory
 RUN mkdir -p /var/www/html/adminer-plugins
 
-# Copie le plugin dans le répertoire standard
+# Copy plugin to standard directory
 COPY adminer-plugins/desc-sort-plugin.php /var/www/html/adminer-plugins/
 
-# Utilise USER root temporairement pour les permissions
+# Use root temporarily for permissions
 USER root
 
-# Crée le fichier de configuration des plugins
+# Create plugin configuration file
 RUN echo '<?php include_once "adminer-plugins/desc-sort-plugin.php"; return array(new AdminerDescSort);' > /var/www/html/adminer-plugins.php
 
-# Remet les bonnes permissions
+# Set correct permissions
 RUN chown -R www-data:www-data /var/www/html/adminer-plugins*
 
-# Revient à l'utilisateur par défaut
+# Return to default user
 USER www-data
 
-# Expose le port 8080
+# Expose port 8080
 EXPOSE 8080
 
-# Variables d'environnement par défaut
+# Default environment variables
 ENV ADMINER_DEFAULT_SERVER=localhost

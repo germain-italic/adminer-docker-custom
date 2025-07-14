@@ -1,35 +1,35 @@
 <?php
 
 /**
- * Plugin Adminer pour tri DESC automatique sur clé primaire
- * Compatible PHP 7.0+ et Adminer 4.x/5.x
+ * Adminer plugin for automatic DESC sorting on primary keys
+ * Compatible with PHP 7.0+ and Adminer 4.x/5.x
  */
 class AdminerDescSort {
     
     /**
-     * Modifie la requête SELECT pour ajouter ORDER BY DESC sur la clé primaire
-     * quand aucun ordre n'est spécifié par l'utilisateur
+     * Modifies the SELECT query to add ORDER BY DESC on primary key
+     * when no order is specified by the user
      */
     function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        // Si l'utilisateur a défini un ordre, on le respecte
+        // If user has defined an order, respect it
         if (!empty($order)) {
-            return ""; // Utilise la requête par défaut
+            return ""; // Use default query
         }
         
-        // Récupère le nom de la table depuis l'URL
+        // Get table name from URL
         $table = isset($_GET["select"]) ? $_GET["select"] : "";
         if (empty($table)) {
             return "";
         }
         
         try {
-            // Utilise la fonction connection() d'Adminer avec le namespace complet
+            // Use Adminer's connection() function with full namespace
             $conn = \Adminer\connection();
             if (!$conn) {
                 return "";
             }
             
-            // Récupère les informations des colonnes
+            // Get column information
             $result = $conn->query("SHOW COLUMNS FROM " . \Adminer\idf_escape($table));
             if (!$result) {
                 return "";
@@ -38,7 +38,7 @@ class AdminerDescSort {
             $primary_key = null;
             $fallback_id = null;
             
-            // Cherche la clé primaire ou une colonne "id"
+            // Look for primary key or "id" column
             while ($row = $result->fetch_assoc()) {
                 if ($row['Key'] === 'PRI') {
                     $primary_key = $row['Field'];
@@ -54,7 +54,7 @@ class AdminerDescSort {
                 return "";
             }
             
-            // Construction de la requête SELECT complète
+            // Build complete SELECT query
             $select_clause = empty($select) ? "*" : implode(", ", $select);
             $where_clause = empty($where) ? "" : " WHERE " . implode(" AND ", $where);
             $group_clause = empty($group) ? "" : " GROUP BY " . implode(", ", $group);
@@ -73,7 +73,7 @@ class AdminerDescSort {
             return $query;
             
         } catch (Exception $e) {
-            // En cas d'erreur, utilise la requête par défaut
+            // In case of error, use default query
             return "";
         }
     }
