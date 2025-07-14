@@ -2,48 +2,78 @@
 
 /**
  * Plugin Adminer pour tri automatique DESC sur la clé primaire
- * Version simplifiée compatible avec toutes les versions d'Adminer
+ * Compatible PHP 7.0+ et API Adminer standard
  */
 class AdminerDescSort {
     
     /**
-     * Modifie l'ordre par défaut en ajoutant un script JavaScript
+     * Construit la requête SQL avec tri DESC automatique sur la clé primaire
+     * @param array $select colonnes sélectionnées
+     * @param array $where conditions WHERE
+     * @param array $group colonnes GROUP BY
+     * @param array $order colonnes ORDER BY
+     * @param int $limit limite de résultats
+     * @param int $page numéro de page
+     * @return string requête SQL complète ou chaîne vide pour utiliser la requête par défaut
      */
-    function head() {
-        ?>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Vérifier si on est sur une page de sélection de table
-            if (window.location.search.includes('select=') && !window.location.search.includes('order')) {
-                // Chercher la première colonne qui ressemble à un ID
-                var firstHeader = document.querySelector('table thead th:first-child a');
-                if (firstHeader) {
-                    var columnName = firstHeader.textContent.trim();
-                    // Si c'est probablement un ID, ajouter le tri DESC
-                    if (columnName.toLowerCase().includes('id') || columnName === 'id') {
-                        var currentUrl = window.location.href;
-                        var separator = currentUrl.includes('?') ? '&' : '?';
-                        var newUrl = currentUrl + separator + 'order%5B0%5D=' + encodeURIComponent(columnName) + '&desc%5B0%5D=1';
-                        window.location.href = newUrl;
+    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
+        // Si un ordre est déjà défini, utiliser la requête par défaut
+        if (!empty($order)) {
+            return "";
+        }
+        
+        // Vérifier qu'on est bien sur une table
+        if (!isset($_GET["select"]) || $_GET["select"] == "") {
+            return "";
+        }
+        
+        $table = $_GET["select"];
+        
+        try {
+            // Récupérer les champs de la table
+            $fields = fields($table);
+            if (!$fields) {
+                return "";
+            }
+            
+            // Chercher la clé primaire
+            $primary_key = null;
+            foreach ($fields as $name => $field) {
+                if ($field["primary"]) {
+                    $primary_key = $name;
+                    break;
+                }
+            }
+            
+            // Si pas de clé primaire trouvée, chercher une colonne "id"
+            if (!$primary_key) {
+                foreach ($fields as $name => $field) {
+                    if (strtolower($name) === 'id' || strpos(strtolower($name), 'id') !== false) {
+                        $primary_key = $name;
+                        break;
                     }
                 }
             }
-        });
-        </script>
-        <?php
-    }
-    
-    /**
-     * Alternative: Modifier l'URL par défaut pour inclure l'ordre DESC
-     */
-    function selectLink($val, $field) {
-        // Si c'est la première fois qu'on accède à une table sans ordre
-        if (isset($_GET['select']) && !isset($_GET['order']) && $field == 'id') {
-            // Ajouter automatiquement l'ordre DESC sur l'ID
-            $_GET['order'][0] = 'id';
-            $_GET['desc'][0] = '1';
+            
+            // Si toujours pas de clé trouvée, utiliser la requête par défaut
+            if (!$primary_key) {
+                return "";
+            }
+            
+            // Construire la requête avec ORDER BY DESC sur la clé primaire
+            $select_clause = empty($select) ? "*" : implode(", ", $select);
+            $where_clause = empty($where) ? "" : " WHERE " . implode(" AND ", $where);
+            $group_clause = empty($group) ? "" : " GROUP BY " . implode(", ", $group);
+            $order_clause = " ORDER BY " . idf_escape($primary_key) . " DESC";
+            $limit_clause = $limit ? " LIMIT " . intval($limit) : "";
+            $offset_clause = ($page && $limit) ? " OFFSET " . (intval($page) * intval($limit)) : "";
+            
+            return "SELECT $select_clause FROM " . table($table) . $where_clause . $group_clause . $order_clause . $limit_clause . $offset_clause;
+            
+        } catch (Exception $e) {
+            // En cas d'erreur, utiliser la requête par défaut
+            return "";
         }
-        return parent::selectLink($val, $field);
     }
 }
 
