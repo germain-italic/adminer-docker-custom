@@ -2,7 +2,7 @@
 
 /**
  * Plugin Adminer pour tri automatique DESC sur la clé primaire
- * Basé sur l'API officielle d'Adminer
+ * Compatible avec PHP 7.0+
  */
 class AdminerDescSort {
     
@@ -13,10 +13,10 @@ class AdminerDescSort {
      * @param array $group result of selectColumnsProcess()[1]
      * @param array $order result of selectOrderProcess()
      * @param int $limit result of selectLimitProcess()
-     * @param int|null $page index of page starting at zero
+     * @param int $page index of page starting at zero
      * @return string empty string to use default query
      */
-    function selectQueryBuild(array $select, array $where, array $group, array $order, int $limit, ?int $page): string {
+    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
         global $adminer;
         
         // Si un tri est déjà défini, on utilise la requête par défaut
@@ -26,6 +26,11 @@ class AdminerDescSort {
         
         // Vérifier qu'on est bien sur une page de sélection de table
         if (!isset($_GET['select']) || empty($_GET['select'])) {
+            return "";
+        }
+        
+        // Vérifier que $select n'est pas vide
+        if (empty($select) || !is_array($select)) {
             return "";
         }
         
@@ -69,9 +74,6 @@ class AdminerDescSort {
             $escaped_pk = $adminer->idf_escape($primary_key);
             
             // Construire SELECT
-            if (empty($select)) {
-                return "";
-            }
             $select_clause = "SELECT " . implode(", ", $select);
             
             // Construire FROM
@@ -79,13 +81,13 @@ class AdminerDescSort {
             
             // Construire WHERE
             $where_clause = "";
-            if (!empty($where)) {
+            if (!empty($where) && is_array($where)) {
                 $where_clause = " WHERE " . implode(" AND ", $where);
             }
             
             // Construire GROUP BY
             $group_clause = "";
-            if (!empty($group)) {
+            if (!empty($group) && is_array($group)) {
                 $group_clause = " GROUP BY " . implode(", ", $group);
             }
             
