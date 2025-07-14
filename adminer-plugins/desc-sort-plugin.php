@@ -11,8 +11,6 @@ class AdminerDescSort {
      * quand aucun ordre n'est spécifié par l'utilisateur
      */
     function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
-        global $connection;
-        
         // Si l'utilisateur a défini un ordre, on le respecte
         if (isset($_GET["order"]) && !empty($_GET["order"])) {
             return ""; // Utilise la requête par défaut
@@ -25,8 +23,14 @@ class AdminerDescSort {
         }
         
         try {
+            // Utilise la fonction connection() d'Adminer
+            $conn = connection();
+            if (!$conn) {
+                return "";
+            }
+            
             // Récupère les informations des colonnes
-            $result = $connection->query("SHOW COLUMNS FROM `" . str_replace("`", "``", $table) . "`");
+            $result = $conn->query("SHOW COLUMNS FROM " . idf_escape($table));
             if (!$result) {
                 return "";
             }
@@ -54,12 +58,12 @@ class AdminerDescSort {
             $select_clause = empty($select) ? "*" : implode(", ", $select);
             $where_clause = empty($where) ? "" : " WHERE " . implode(" AND ", $where);
             $group_clause = empty($group) ? "" : " GROUP BY " . implode(", ", $group);
-            $order_clause = " ORDER BY `" . str_replace("`", "``", $sort_column) . "` DESC";
+            $order_clause = " ORDER BY " . idf_escape($sort_column) . " DESC";
             $limit_clause = $limit > 0 ? " LIMIT " . intval($limit) : "";
             $offset_clause = ($page && $limit) ? " OFFSET " . (intval($page) * intval($limit)) : "";
             
             $query = "SELECT " . $select_clause . 
-                    " FROM `" . str_replace("`", "``", $table) . "`" .
+                    " FROM " . idf_escape($table) .
                     $where_clause . 
                     $group_clause . 
                     $order_clause . 
