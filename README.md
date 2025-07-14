@@ -212,6 +212,70 @@ Apache License 2.0 (same as Adminer)
 - **Adminer**: https://www.adminer.org/
 - **Plugin Documentation**: https://www.adminer.org/plugins/
 
+## 🤝 Contributing
+
+### Development Workflow
+
+1. **Make your changes** and test locally:
+   ```bash
+   ./setup.sh
+   ```
+
+2. **Update version** in `Dockerfile` LABEL and `README.md` changelog
+
+3. **Test the build**:
+   ```bash
+   docker build -t italic/adminer-desc-sort:test .
+   docker run -p 8081:8080 italic/adminer-desc-sort:test
+   ```
+
+### Release Process
+
+#### 1. Tag and Push to GitHub
+
+```bash
+# Tag the release (replace X.Y.Z with actual version)
+git tag -a v2.1.0 -m "Release version 2.1.0"
+git push origin v2.1.0
+
+# Push changes
+git push origin master
+```
+
+#### 2. Build and Publish Docker Image
+
+```bash
+# Build for multiple architectures
+docker buildx create --use --name multiarch
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t italic/adminer-desc-sort:2.1.0 \
+  -t italic/adminer-desc-sort:latest \
+  --push .
+
+# Or simple build for current architecture
+docker build -t italic/adminer-desc-sort:2.1.0 .
+docker build -t italic/adminer-desc-sort:latest .
+docker push italic/adminer-desc-sort:2.1.0
+docker push italic/adminer-desc-sort:latest
+```
+
+#### 3. Create GitHub Release
+
+1. Go to [GitHub Releases](https://github.com/germain-italic/adminer-docker-custom/releases)
+2. Click "Create a new release"
+3. Select tag `v2.1.0`
+4. Add release notes from changelog
+5. Publish release
+
+### Testing Checklist
+
+- [ ] Plugin loads without PHP errors
+- [ ] Plugin appears in "Loaded plugins" list
+- [ ] Tables are sorted DESC by primary key by default
+- [ ] User sorting (click columns) still works
+- [ ] Both Docker and manual installations work
+- [ ] Multi-architecture Docker image works
+
 ## 📋 Changelog
 
 ### Version 2.1.0
