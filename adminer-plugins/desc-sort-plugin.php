@@ -8,13 +8,6 @@ class AdminerDescSort {
     
     /**
      * Construit la requête SQL avec tri DESC automatique sur la clé primaire
-     * @param array $select colonnes sélectionnées
-     * @param array $where conditions WHERE
-     * @param array $group colonnes GROUP BY
-     * @param array $order colonnes ORDER BY
-     * @param int $limit limite de résultats
-     * @param int $page numéro de page
-     * @return string requête SQL complète ou chaîne vide pour utiliser la requête par défaut
      */
     function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
         // Si un ordre est déjà défini, utiliser la requête par défaut
@@ -30,45 +23,54 @@ class AdminerDescSort {
         $table = $_GET["select"];
         
         try {
-            // Récupérer les champs de la table
-            $fields = fields($table);
-            if (!$fields) {
+            // Accéder aux fonctions via l'instance globale
+            global $connection;
+            if (!$connection) {
                 return "";
             }
             
-            // Chercher la clé primaire
+            // Récupérer les champs de la table via une requête directe
+            $result = $connection->query("SHOW COLUMNS FROM " . "`" . str_replace("`", "``", $table) . "`");
+            if (!$result) {
+                return "";
+            }
+            
             $primary_key = null;
-            foreach ($fields as $name => $field) {
-                if ($field["primary"]) {
-                    $primary_key = $name;
+            $id_column = null;
+            
+            // Analyser les colonnes
+            while ($row = $result->fetch_assoc()) {
+                $field_name = $row['Field'];
+                $key = $row['Key'];
+                
+                // Chercher la clé primaire
+                if ($key === 'PRI') {
+                    $primary_key = $field_name;
                     break;
                 }
-            }
-            
-            // Si pas de clé primaire trouvée, chercher une colonne "id"
-            if (!$primary_key) {
-                foreach ($fields as $name => $field) {
-                    if (strtolower($name) === 'id' || strpos(strtolower($name), 'id') !== false) {
-                        $primary_key = $name;
-                        break;
-                    }
+                
+                // Chercher une colonne contenant "id" comme fallback
+                if (!$id_column && (strtolower($field_name) === 'id' || strpos(strtolower($field_name), 'id') !== false)) {
+                    $id_column = $field_name;
                 }
             }
             
-            // Si toujours pas de clé trouvée, utiliser la requête par défaut
-            if (!$primary_key) {
+            // Utiliser la clé primaire ou la colonne ID trouvée
+            $sort_column = $primary_key ?: $id_column;
+            
+            if (!$sort_column) {
                 return "";
             }
             
-            // Construire la requête avec ORDER BY DESC sur la clé primaire
+            // Construire la requête avec ORDER BY DESC
             $select_clause = empty($select) ? "*" : implode(", ", $select);
             $where_clause = empty($where) ? "" : " WHERE " . implode(" AND ", $where);
             $group_clause = empty($group) ? "" : " GROUP BY " . implode(", ", $group);
-            $order_clause = " ORDER BY " . idf_escape($primary_key) . " DESC";
+            $order_clause = " ORDER BY `" . str_replace("`", "``", $sort_column) . "` DESC";
             $limit_clause = $limit ? " LIMIT " . intval($limit) : "";
             $offset_clause = ($page && $limit) ? " OFFSET " . (intval($page) * intval($limit)) : "";
             
-            return "SELECT $select_clause FROM " . table($table) . $where_clause . $group_clause . $order_clause . $limit_clause . $offset_clause;
+            return "SELECT $select_clause FROM `" . str_replace("`", "``", $table) . "`" . $where_clause . $group_clause . $order_clause . $limit_clause . $offset_clause;
             
         } catch (Exception $e) {
             // En cas d'erreur, utiliser la requête par défaut
