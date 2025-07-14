@@ -15,9 +15,6 @@ COPY adminer-plugins/desc-sort-plugin.php /var/www/html/adminer-plugins/
 # Use root temporarily for permissions
 USER root
 
-# Create plugin configuration file
-RUN echo '<?php include_once "adminer-plugins/desc-sort-plugin.php"; return array(new AdminerDescSort);' > /var/www/html/adminer-plugins.php
-
 # Set correct permissions
 RUN chown -R www-data:www-data /var/www/html/adminer-plugins*
 

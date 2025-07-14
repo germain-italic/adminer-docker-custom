@@ -39,7 +39,7 @@ chmod +x setup.sh
 ## ✨ Features
 
 - ✅ Automatic **DESC** sorting on **primary key** column by default
-- ✅ Compatible with standard Adminer plugin architecture
+- ✅ Compatible with Adminer 5.x plugin architecture
 - ✅ Based on Adminer 5.x (always latest stable version)  
 - ✅ No Adminer modifications required
 - ✅ Works with any primary key name (id, user_id, estimate_file_id, etc.)
@@ -49,8 +49,7 @@ chmod +x setup.sh
 ## 🔧 How it works
 
 The plugin uses Adminer's standard architecture:
-- Placed in `adminer-plugins/`
-- Loaded via `adminer-plugins.php` 
+- Placed in `adminer-plugins/` directory
 - Automatically detects primary key and adds `ORDER BY primary_key DESC`
 - Only applies when no user-defined order exists
 - Falls back to any column containing "id" if no primary key found
@@ -64,6 +63,10 @@ The plugin hooks into Adminer's `selectQueryBuild` method to:
 3. **Fallback strategy**: If no primary key, look for columns containing "id"
 4. **Build query**: Construct complete SELECT with `ORDER BY column DESC`
 5. **Error handling**: Return empty string to use default query if anything fails
+
+The plugin uses proper Adminer namespace functions:
+- `\Adminer\connection()` for database access
+- `\Adminer\idf_escape()` for safe identifier escaping
 
 ## 🌐 Access
 
@@ -152,8 +155,8 @@ Key considerations:
 ## 🐛 Troubleshooting
 
 ### Plugin not loading
-- Check `adminer-plugins.php` exists and is readable
-- Verify plugin file path in configuration
+- Check that `adminer-plugins/` directory exists and is readable
+- Verify plugin file path and permissions
 - Check PHP error logs for syntax errors
 
 ### No DESC sorting
@@ -164,6 +167,12 @@ Key considerations:
 ### Connection errors
 - Plugin uses `\Adminer\connection()` - ensure Adminer is properly loaded
 - Check database connectivity outside the plugin
+- Verify namespace usage: `\Adminer\connection()` not `connection()`
+
+### PHP Fatal Errors
+- Ensure PHP 7.0+ compatibility
+- Check that Adminer namespace functions are available
+- Verify plugin returns empty string on error, not null
 
 ## 📄 License
 
