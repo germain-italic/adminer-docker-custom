@@ -12,7 +12,7 @@ class AdminerDescSort {
      * Modifie la requête SELECT pour ajouter ORDER BY DESC sur la clé primaire
      * quand aucun ordre n'est spécifié par l'utilisateur
      */
-    function selectQueryBuild(array $select, array $where, array $group, array $order, int $limit, ?int $page): string {
+    function selectQueryBuild($select, $where, $group, $order, $limit, $page) {
         global $connection;
         
         // Si l'utilisateur a défini un ordre, on le respecte
@@ -21,7 +21,7 @@ class AdminerDescSort {
         }
         
         // Récupère le nom de la table depuis l'URL
-        $table = $_GET["select"] ?? "";
+        $table = isset($_GET["select"]) ? $_GET["select"] : "";
         if (empty($table)) {
             return "";
         }
@@ -47,7 +47,7 @@ class AdminerDescSort {
                 }
             }
             
-            $sort_column = $primary_key ?: $fallback_id;
+            $sort_column = $primary_key ? $primary_key : $fallback_id;
             if (!$sort_column) {
                 return "";
             }
