@@ -24,7 +24,7 @@ mv adminer-5.3.0.php index.php
 
 # 2. Download the plugin
 mkdir adminer-plugins
-wget -O adminer-plugins/desc-sort.php https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
+wget -O adminer-plugins/desc-sort-plugin.php https://raw.githubusercontent.com/germain-italic/adminer-docker-custom/master/adminer-plugins/desc-sort-plugin.php
 ```
 
 ### Option 3: Build from source
@@ -45,8 +45,11 @@ chmod +x setup.sh
 - ✅ Works with any primary key name (id, user_id, estimate_file_id, etc.)
 - ✅ Respects user-defined sorting when columns are clicked
 - ✅ PHP 7.0+ compatible
+- ✅ **Docker optimized** plugin loading system
 
 ## 🔧 How it works
+
+### Plugin Logic
 
 Adminer automatically loads plugins from the `adminer-plugins/` directory. The plugin hooks into Adminer's `selectQueryBuild` method to:
 
@@ -55,6 +58,13 @@ Adminer automatically loads plugins from the `adminer-plugins/` directory. The p
 3. **Fallback strategy**: If no primary key, look for columns containing "id"
 4. **Build query**: Construct complete SELECT with `ORDER BY column DESC`
 5. **Error handling**: Return empty string to use default query if anything fails
+
+### Docker Integration
+
+The Docker image uses the official Adminer Docker Hub plugin loading system:
+- Plugin source: `/var/www/html/adminer-plugins/desc-sort-plugin.php`
+- Plugin wrapper: `/var/www/html/plugins-enabled/desc-sort.php` (returns plugin instance)
+- Automatic loading: No configuration required
 
 ### Technical Details
 
@@ -101,7 +111,7 @@ docker run -p 8081:8080 italic/adminer-desc-sort:local
 
 ### Plugin Development
 
-Adminer automatically loads `.php` files from the `adminer-plugins/` directory. Each plugin must:
+For **non-Docker** environments, Adminer automatically loads `.php` files from the `adminer-plugins/` directory. Each plugin must:
 
 ```php
 class PluginName {
@@ -110,6 +120,14 @@ class PluginName {
         return $result; // Or "" for default behavior
     }
 }
+```
+
+For **Docker** environments, plugins need a wrapper in `plugins-enabled/`:
+
+```php
+<?php
+require_once('../adminer-plugins/plugin-name.php');
+return new PluginName();
 ```
 
 Key considerations:
@@ -148,7 +166,13 @@ Key considerations:
 
 ## 🐛 Troubleshooting
 
-### Plugin not loading
+### Plugin not loading in Docker
+- **Check loaded plugins**: Look for the plugin name in Adminer's "Loaded plugins" section
+- **Verify build**: Ensure `docker build` completed without errors
+- **Check logs**: Run `docker-compose logs -f` to see any PHP errors
+- **Verify wrapper**: Ensure `/var/www/html/plugins-enabled/desc-sort.php` exists in container
+
+### Plugin not loading (manual installation)
 - **Check plugins directory**: Verify `adminer-plugins/` exists next to `index.php`
 - **Verify file permissions**: Ensure plugin files are readable by web server
 - **Check PHP syntax**: Verify plugin file has no syntax errors
@@ -173,7 +197,7 @@ Key considerations:
 
 ### Docker specific issues
 - **Container rebuild**: Try rebuilding the Docker image completely
-- **Plugin location**: Verify plugin is in `/var/www/html/adminer-plugins/`
+- **Plugin wrapper**: Verify the plugin wrapper in `plugins-enabled/` is correct
 - **File permissions**: Check that www-data user can read plugin files
 
 ## 📄 License
@@ -187,3 +211,17 @@ Apache License 2.0 (same as Adminer)
 - **Issues**: https://github.com/germain-italic/adminer-docker-custom/issues
 - **Adminer**: https://www.adminer.org/
 - **Plugin Documentation**: https://www.adminer.org/plugins/
+
+## 📋 Changelog
+
+### Version 2.1.0
+- ✅ **Fixed Docker plugin loading**: Proper integration with official Adminer Docker image
+- ✅ **Dual loading system**: Works with both `adminer-plugins/` (manual) and `plugins-enabled/` (Docker)
+- ✅ **Improved documentation**: Added Docker-specific troubleshooting and development guide
+- ✅ **Enhanced error handling**: Better PHP error handling and wrapper structure
+
+### Version 2.0.0
+- ✅ **PHP 7.0+ compatibility**: Full compatibility with modern PHP versions
+- ✅ **Adminer 5.x support**: Updated for latest Adminer API
+- ✅ **Improved plugin architecture**: Cleaner code structure and better error handling
+- ✅ **Docker integration**: Full Docker support with automatic plugin loading
